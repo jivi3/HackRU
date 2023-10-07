@@ -1,20 +1,25 @@
 import { StyleSheet, Text, View, TextInput, ScrollView } from "react-native";
+import { useState } from "react";
 
-const LoginCard = () => {
+const LoginCard = ({ setEmail, setPassword }) => {
   return (
     <View style={styles.loginCard}>
       <TextInput
         placeholder={"Email"}
-        placeholderTextColor={"#000"}
+        placeholderTextColor={"#8c8c8c"}
         enablesReturnKeyAutomatically={true}
+        // value={emailState}
+        onChangeText={(value) => setEmail(value)}
         inputMode={"email"}
         style={styles.input}
       />
       <TextInput
         placeholder={"Password"}
-        placeholderTextColor={"#000"}
+        placeholderTextColor={"#8c8c8c"}
         enablesReturnKeyAutomatically={true}
         style={styles.input}
+        // value={passwordState}
+        onChangeText={(value) => setPassword(value)}
         autoComplete={"current-password"}
         secureTextEntry={true}
       />
