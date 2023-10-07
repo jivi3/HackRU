@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "hackru",
-    "slug": "hackru",
+    "name": "fairshare",
+    "slug": "fairshare",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -28,7 +26,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "21653b40-997c-45db-9c1d-65107ccc3399"
+        "projectId": "2b027529-d7bb-42dd-831d-f77d1736dcf5"
       }
     },
     "owner": "donda403"
