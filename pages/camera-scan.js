@@ -1,54 +1,68 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { Camera } from "expo-camera";
-import { FIREBASE_STORAGE } from "../firebaseConfig";
+import { FIREBASE_STORAGE, FIREBASE_AUTH } from "../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Image } from "react-native";
+import LoadingSpinner from "../components/LoadSpinner";
+
 
 export default function CameraScan({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const cameraRef = useRef(null);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
+  const [isLoading, setIsLoading] = useState(false);
+  const userId = FIREBASE_AUTH.currentUser?.uid;
 
   const toggleFlash = () => {
-    if (flashMode === Camera.Constants.FlashMode.off) {
-      setFlashMode(Camera.Constants.FlashMode.on);
-    } else {
-      setFlashMode(Camera.Constants.FlashMode.off);
-    }
+    setFlashMode(
+      flashMode === Camera.Constants.FlashMode.off
+        ? Camera.Constants.FlashMode.on
+        : Camera.Constants.FlashMode.off
+    );
   };
 
   useEffect(() => {
     (async () => {
-      const cameraStatus = await Camera.requestPermissionsAsync();
+      const cameraStatus = await Camera.requestCameraPermissionsAsync();
       setHasPermission(cameraStatus.status === "granted");
     })();
   }, []);
+  const [capturedPhoto, setCapturedPhoto] = useState(null); // state to hold the captured photo URI
 
   const handleCapture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
+      setIsLoading(true);
+      setCapturedPhoto(photo.uri); // Display the captured photo on the screen
 
-      const response = await fetch(photo.uri);
-      const blob = await response.blob();
-      const storageRef = ref(FIREBASE_STORAGE, `photos/${Date.now()}.jpg`);
+      setTimeout(async () => {
+        // Upload to Firebase Cloud Storage
+        const response = await fetch(photo.uri);
+        const blob = await response.blob();
+        const storageRef = ref(FIREBASE_STORAGE, `users/${userId}/photos/${Date.now()}.jpg`);
 
-      const uploadTask = uploadBytesResumable(storageRef, blob);
+        const uploadTask = uploadBytesResumable(storageRef, blob);
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {},
-        (error) => {
-          console.error("Error uploading image: ", error);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log("File available at", downloadURL);
-
-          navigation.navigate("HomeScreen");
-        }
-      );
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Handle the upload progress if needed
+          },
+          (error) => {
+            console.error("Error uploading image: ", error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log("File available at", downloadURL);
+            setCapturedPhoto(null); // Hide the captured photo
+            setIsLoading(false);
+            navigation.navigate("PickItems"); // Navigate to PickItems after the upload is complete
+          }
+        );
+      }, 500); // Display the captured photo for 1 second
     }
   };
 
@@ -84,19 +98,6 @@ export default function CameraScan({ navigation }) {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.flipButton}
-          onPress={() => {
-            setType(
-              type === Camera.Constants.Type.back
-                ? Camera.Constants.Type.front
-                : Camera.Constants.Type.back
-            );
-          }}
-        >
-          <MaterialIcons name="flip-camera-ios" size={28} color="white" />
-        </TouchableOpacity>
-
         <View style={styles.bottomBar}>
           <View style={styles.captureButtonOuter}>
             <TouchableOpacity
@@ -106,6 +107,17 @@ export default function CameraScan({ navigation }) {
           </View>
         </View>
       </Camera>
+
+      {/* Moved loadingContainer outside of the Camera component */}
+      {capturedPhoto && (
+        <View style={styles.loadingContainer}>
+          <Image
+            source={{ uri: capturedPhoto }}
+            style={{ ...StyleSheet.absoluteFillObject }}
+          />
+          {isLoading && <LoadingSpinner color="#23B26E" />}
+        </View>
+      )}
     </View>
   );
 }
@@ -131,18 +143,13 @@ const styles = StyleSheet.create({
   goBackButton: {
     padding: 10,
   },
-  flipButton: {
-    position: "absolute",
-    right: 50,
-    bottom: "7%",
-    padding: 10,
-  },
   flashButton: {
     position: "absolute",
-    left: 50,
-    bottom: "7%",
+    right: 20, // 20 pixels from the right edge
+    top: 20, // 20 pixels from the top edge
     padding: 10,
   },
+
   bottomBar: {
     flexDirection: "row",
     justifyContent: "center",
@@ -164,5 +171,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#23B26E",
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.85)", // Darkened background
+    zIndex: 1000, // Ensure it's on top
   },
 });
