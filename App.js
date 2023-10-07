@@ -1,136 +1,40 @@
-import { StyleSheet, Text, View, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  Button,
+  ScrollView,
+  StatusBar,
+  Image
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import BillCard from "./components/bill-card/bill-card";
+import waves from "./assets/waves.png";
+import NewBill from "./pages/newBill";
+import HomeScreen from "./pages/home-view";
+import LoginView from "./pages/login-view";
 
-const BillCard = ({ restaurantName, date, totalBill, yourShare, paidBy, otherPeople, numOtherPeople, paidWith }) => {
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+
+const Stack = createNativeStackNavigator();
+
+function App() {
+  
   return (
-    <View style={styles.container}>
-      <View>
-        <View style={styles.titleView}>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-            {restaurantName}
-          </Text>
-          <View
-            style={{ padding: 5, borderRadius: 5, backgroundColor: "#23B26E" }}
-          >
-            <Text
-              style={{ color: "white", fontSize: "16", fontWeight: "bold" }}
-            >
-              {date}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.5)" }}>
-          { otherPeople }
-          <Text style={{ color: "black", fontWeight: 400 }}>{ numOtherPeople }</Text>
-        </Text>
-      </View>
-
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <View
-          style={{
-            backgroundColor: "#d9d9d9",
-            padding: 10,
-            borderRadius: 5,
-          }}
-        >
-          <Text
-            style={{ textAlign: "center", fontSize: 12, fontWeight: "bold" }}
-          >
-            Total Bill
-          </Text>
-          <Text
-            style={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}
-          >
-            {totalBill}
-          </Text>
-          <Text style={{ textAlign: "center", fontSize: 10 }}>
-          
-            Paid by <Text style={{ fontWeight: "bold" }}>  {paidBy}</Text>
-          </Text>
-        </View>
-        <LinearGradient
-          // Button Linear Gradient
-          start={{ x: 0.1, y: 0.2 }}
-          colors={["rgba(35, 178, 110, 1.0)", "rgba(35, 178, 110, 0.5)"]}
-          style={{ borderRadius: 5, padding: 10 }}
-        >
-          <Text
-            style={{ textAlign: "center", fontSize: 12, fontWeight: "bold" }}
-          >
-            Your share
-          </Text>
-          <Text
-            style={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}
-          >
-            {yourShare}
-            
-          </Text>
-          <Text style={{ textAlign: "center", fontSize: 10 }}>plus tip</Text>
-        </LinearGradient>
-        {/* <View
-          styles={{
-            flexDirection: "column",
-            gap: 100,
-          }}
-        >
-          <Pressable
-            style={{
-              padding: 6,
-              backgroundColor: "#3183FF",
-              borderRadius: 5,
-            }}
-          >
-            <Text
-              style={{ textAlign: "center", fontSize: 14, fontWeight: 600 }}
-            >
-              H
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={{
-              padding: 6,
-              backgroundColor: "#23B26E",
-              borderRadius: 5,
-              width: "100%",
-            }}
-          >
-            <Text
-              style={{ textAlign: "center", fontSize: 14, fontWeight: 600 }}
-            >
-              Pay Indra
-            </Text>
-          </Pressable>
-        </View> */}
-      </View>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{
+    headerShown: false}} initialRouteName="Login">
+        <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="NewBill" component={NewBill} />
+        <Stack.Screen name="Login" component={LoginView} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-};
+}
 
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    width: 330,
-    padding: 20,
-    textAlign: "left",
-    backgroundColor: "rgb(255,255,255)",
-    // backgroundColor: "000",
-    borderRadius: 10,
-    shadowColor: "#171717",
-    shadowOffset: { width: -2, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    flexDirection: "column",
-    // justifyContent: "center",
-    // alignItems: "center",
-    gap: 10,
-  },
-  titleView: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-});
 
-export default BillCard;
+
+export default App;
