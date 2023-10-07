@@ -1,5 +1,4 @@
 import {
-
   StyleSheet,
   Text,
   View,
@@ -10,7 +9,6 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import BillCard from "../components/bill-card/bill-card";
 import waves from "../assets/waves.png";
-
 
 function HomeScreen({ navigation }) {
   return (
@@ -140,21 +138,16 @@ function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     flexDirection: "column",
   },
   bgImage: {
     position: "absolute",
-    // width: 400,
-    // height: 200,
-    // paddingTop: 900,
     bottom: 54,
   },
   dashboardContainer: {
     padding: 20,
     flexDirection: "column",
     gap: 10,
-    // backgroundColor: "#f4f4ff",
   },
   titleContainer: {
     flexDirection: "row",
@@ -165,13 +158,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "column",
     gap: 20,
-    // justifyContent: "center",
-    // alignContent: "center",
-    // padding: 5,
-    // flexDirection: "column",
-  },
-  text: {
-    // color: "white",
   },
 });
 

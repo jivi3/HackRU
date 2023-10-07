@@ -30,7 +30,6 @@ export default function CameraScan({ navigation }) {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
 
-      // Upload to Firebase Cloud Storage
       const response = await fetch(photo.uri);
       const blob = await response.blob();
       const storageRef = ref(FIREBASE_STORAGE, `photos/${Date.now()}.jpg`);
@@ -39,9 +38,7 @@ export default function CameraScan({ navigation }) {
 
       uploadTask.on(
         "state_changed",
-        (snapshot) => {
-          // Handle the upload progress if needed
-        },
+        (snapshot) => {},
         (error) => {
           console.error("Error uploading image: ", error);
         },
@@ -49,7 +46,6 @@ export default function CameraScan({ navigation }) {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log("File available at", downloadURL);
 
-          // Navigate to page after the image upload is complete
           navigation.navigate("HomeScreen");
         }
       );
