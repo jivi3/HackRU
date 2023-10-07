@@ -235,6 +235,7 @@ const LoginView = () => {
                 >
                   <Pressable
                     style={{
+                      
                       padding: 15,
                       backgroundColor: "#23B26E",
                       borderRadius: 10,
