@@ -1,10 +1,11 @@
 import {
+
   StyleSheet,
   Text,
   View,
   SafeAreaView,
   ScrollView,
-  Image
+  Image,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import BillCard from "../components/bill-card/bill-card";
@@ -43,12 +44,11 @@ function HomeScreen({ navigation }) {
             </View>
           </View>
           <ScrollView
-            style={{ height: 700 }}
+            style={{ height: 670 }}
             contentInset={{ top: 0, left: 0, bottom: 30, right: 0 }}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.billsContainer}>
-              {/* <Text style={{ fontSize: 18, fontWeight: "bold" }}>My Bills</Text> */}
               <BillCard
                 restaurantName={"Mithaas"}
                 date={"9/30/23"}

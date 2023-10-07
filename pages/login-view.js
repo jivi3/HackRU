@@ -11,51 +11,26 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import { Animated, Easing } from "react-native";
 import { useState } from "react";
-import LoginCard, {
-  email,
-  password,
-} from "../components/login-card/login-card";
+import LoginCard from "../components/login-card/login-card";
 import loginwaves from "../assets/loginwaves.png";
-//import auth from "@react-native-firebase/auth";
+
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebaseConfig";
 
-const LoginView = () => {
+const LoginView = ({ navigation }) => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const buttonScale = new Animated.Value(1);
-  const auth = FIREBASE_AUTH;
-  const handlePress = () => {
-    // Animate the button press
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95, // Scale down to 0.95
-        duration: 100, // Animation duration in milliseconds
-        useNativeDriver: true,
-        easing: Easing.ease,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1, // Scale back to 1
-        duration: 100,
-        useNativeDriver: true,
-        easing: Easing.ease,
-      }),
-    ]).start();
 
-    // Perform your login logic here
-    signIn();
-  };
+  const auth = FIREBASE_AUTH;
   const signIn = async () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
-      alert("Success");
-      console.log("Success:", response);
-      // Navigate to the main/home screen or any other action on successful sign-in.
+      //alert("Success");
+      //console.log(response);
+      navigation.navigate("NewBill");
     } catch (error) {
-      alert("Failed");
-      console.log("Failed:", response);
+      alert("Sign in Failed: " + error.message);
     }
   };
 
@@ -64,13 +39,17 @@ const LoginView = () => {
       const response = await auth().createUserWithEmailAndPassword(
         email,
         password
-      );
+      );r
       console.log("User registered:", response);
-      // Send verification email, or navigate to a welcome screen, or other actions on successful sign-up.
+      
     } catch (error) {
       alert("Sign up Failed: " + error.message);
       console.log(error);
     }
+  };
+
+  const onPressFunction = () => {
+    signIn();
   };
 
   if (Platform.OS === "web") {
@@ -80,7 +59,10 @@ const LoginView = () => {
           <View
             style={{
               padding: 22,
+              // backgroundColor: "#f4f4ff",
               borderRadius: 20,
+              // bottom: 0,
+              // marginTop: 10,
             }}
           >
             <Text
@@ -88,7 +70,10 @@ const LoginView = () => {
                 fontSize: 70,
                 fontWeight: 700,
                 color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-
+                // shadowColor: "#171717",
+                // shadowOffset: { width: -1, height: 2 },
+                // shadowOpacity: 0.25,
+                // shadowRadius: 2,
                 textAlign: "center",
               }}
             >
@@ -99,8 +84,10 @@ const LoginView = () => {
           <View
             style={{
               gap: 20,
-
+              // width: "120%",
+              // height: "100%",
               flexDirection: "column",
+              // justifyContent: "center",
               alignItems: "center",
             }}
           >
@@ -118,21 +105,19 @@ const LoginView = () => {
                 </Text>
               </View>
 
-              <LoginCard
-                setEmail={(e) => setEmail(e)}
-                setPassword={(e) => setPassword(e)}
-              />
+              <LoginCard />
             </View>
 
             <View
               style={{
                 gap: 20,
                 alignItems: "center",
+
+                // marginTop: 10,
               }}
             >
               <Pressable
                 style={{
-                  transform: [{ scale: buttonScale }],
                   padding: 15,
                   backgroundColor: "#23B26E",
                   borderRadius: 10,
@@ -142,7 +127,7 @@ const LoginView = () => {
                   shadowOpacity: 0.25,
                   shadowRadius: 4,
                 }}
-                onPress={() => handlePress()}
+                onPress={() => onPressFunction()}
               >
                 <Text
                   style={{
@@ -181,8 +166,10 @@ const LoginView = () => {
               <View
                 style={{
                   padding: 22,
-
+                  // backgroundColor: "#f4f4ff",
                   borderRadius: 20,
+                  // bottom: 0,
+                  // marginTop: 10,
                 }}
               >
                 <Text
@@ -190,7 +177,10 @@ const LoginView = () => {
                     fontSize: 70,
                     fontWeight: 700,
                     color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-
+                    // shadowColor: "#171717",
+                    // shadowOffset: { width: -1, height: 2 },
+                    // shadowOpacity: 0.25,
+                    // shadowRadius: 2,
                     textAlign: "center",
                   }}
                 >
@@ -201,9 +191,10 @@ const LoginView = () => {
               <View
                 style={{
                   gap: 20,
-
+                  // width: "120%",
+                  // height: "100%",
                   flexDirection: "column",
-
+                  // justifyContent: "center",
                   alignItems: "center",
                 }}
               >
@@ -231,11 +222,12 @@ const LoginView = () => {
                   style={{
                     gap: 20,
                     alignItems: "center",
+
+                    // marginTop: 10,
                   }}
                 >
                   <Pressable
                     style={{
-                      
                       padding: 15,
                       backgroundColor: "#23B26E",
                       borderRadius: 10,
@@ -245,7 +237,8 @@ const LoginView = () => {
                       shadowOpacity: 0.25,
                       shadowRadius: 4,
                     }}
-                    onPress={() => handlePress()}
+                    //onPress={() => navigation.navigate("HomeScreen")}
+                    onPress={() => onPressFunction()}
                   >
                     <Text
                       style={{
@@ -286,6 +279,7 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: "center",
+    // width: "100%",
   },
 });
 
