@@ -11,16 +11,16 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing } from "react-native";
 import { useState } from "react";
 import LoginCard, {
   email,
   password,
-} from "../components/login-card/login-card.js";
-import loginwaves from "../assets/loginwaves.png";
+} from "../../components/login-card/login-card";
+import loginwaves from "../../assets/loginwaves.png";
 //import auth from "@react-native-firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { FIREBASE_AUTH } from "../node_modules/firebaseConfig.ts";
+import { FIREBASE_AUTH } from "../../node_modules/firebaseConfig.ts";
 
 const LoginView = () => {
   const [email, setEmail] = useState();
@@ -73,7 +73,6 @@ const LoginView = () => {
     }
   };
 
-  
   if (Platform.OS === "web") {
     return (
       <SafeAreaView style={styles.container}>
