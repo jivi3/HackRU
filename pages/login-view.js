@@ -11,10 +11,69 @@ import {
   StatusBar,
   Platform,
 } from "react-native";
-import LoginCard from "../components/login-card/login-card";
-import loginwaves from "../assets/loginwaves.png"
+import { Animated, Easing } from 'react-native';
+import { useState } from "react";
+import LoginCard, {
+  email,
+  password,
+} from "../components/login-card/login-card.js";
+import loginwaves from "../assets/loginwaves.png";
+//import auth from "@react-native-firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { FIREBASE_AUTH } from "../node_modules/firebaseConfig.ts";
 
-const LoginView = ({ navigation }) => {
+const LoginView = () => {
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+  const buttonScale = new Animated.Value(1);
+  const auth = FIREBASE_AUTH;
+  const handlePress = () => {
+    // Animate the button press
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.95, // Scale down to 0.95
+        duration: 100, // Animation duration in milliseconds
+        useNativeDriver: true,
+        easing: Easing.ease,
+      }),
+      Animated.timing(buttonScale, {
+        toValue: 1, // Scale back to 1
+        duration: 100,
+        useNativeDriver: true,
+        easing: Easing.ease,
+      }),
+    ]).start();
+
+    // Perform your login logic here
+    signIn();
+  };
+  const signIn = async () => {
+    try {
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      alert("Success");
+      console.log("Success:", response);
+      // Navigate to the main/home screen or any other action on successful sign-in.
+    } catch (error) {
+      alert("Failed");
+      console.log("Failed:", response);
+    }
+  };
+
+  const signUp = async () => {
+    try {
+      const response = await auth().createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      console.log("User registered:", response);
+      // Send verification email, or navigate to a welcome screen, or other actions on successful sign-up.
+    } catch (error) {
+      alert("Sign up Failed: " + error.message);
+      console.log(error);
+    }
+  };
+
+  
   if (Platform.OS === "web") {
     return (
       <SafeAreaView style={styles.container}>
@@ -22,10 +81,7 @@ const LoginView = ({ navigation }) => {
           <View
             style={{
               padding: 22,
-              // backgroundColor: "#f4f4ff",
               borderRadius: 20,
-              // bottom: 0,
-              // marginTop: 10,
             }}
           >
             <Text
@@ -33,10 +89,7 @@ const LoginView = ({ navigation }) => {
                 fontSize: 70,
                 fontWeight: 700,
                 color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-                // shadowColor: "#171717",
-                // shadowOffset: { width: -1, height: 2 },
-                // shadowOpacity: 0.25,
-                // shadowRadius: 2,
+
                 textAlign: "center",
               }}
             >
@@ -47,10 +100,8 @@ const LoginView = ({ navigation }) => {
           <View
             style={{
               gap: 20,
-              // width: "120%",
-              // height: "100%",
+
               flexDirection: "column",
-              // justifyContent: "center",
               alignItems: "center",
             }}
           >
@@ -68,19 +119,21 @@ const LoginView = ({ navigation }) => {
                 </Text>
               </View>
 
-              <LoginCard />
+              <LoginCard
+                setEmail={(e) => setEmail(e)}
+                setPassword={(e) => setPassword(e)}
+              />
             </View>
 
             <View
               style={{
                 gap: 20,
                 alignItems: "center",
-
-                // marginTop: 10,
               }}
             >
               <Pressable
                 style={{
+                  transform: [{ scale: buttonScale }],
                   padding: 15,
                   backgroundColor: "#23B26E",
                   borderRadius: 10,
@@ -90,7 +143,7 @@ const LoginView = ({ navigation }) => {
                   shadowOpacity: 0.25,
                   shadowRadius: 4,
                 }}
-                onPress={() => navigation.navigate("HomeScreen")}
+                onPress={() => handlePress()}
               >
                 <Text
                   style={{
@@ -129,10 +182,8 @@ const LoginView = ({ navigation }) => {
               <View
                 style={{
                   padding: 22,
-                  // backgroundColor: "#f4f4ff",
+
                   borderRadius: 20,
-                  // bottom: 0,
-                  // marginTop: 10,
                 }}
               >
                 <Text
@@ -140,10 +191,7 @@ const LoginView = ({ navigation }) => {
                     fontSize: 70,
                     fontWeight: 700,
                     color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-                    // shadowColor: "#171717",
-                    // shadowOffset: { width: -1, height: 2 },
-                    // shadowOpacity: 0.25,
-                    // shadowRadius: 2,
+
                     textAlign: "center",
                   }}
                 >
@@ -154,10 +202,9 @@ const LoginView = ({ navigation }) => {
               <View
                 style={{
                   gap: 20,
-                  // width: "120%",
-                  // height: "100%",
+
                   flexDirection: "column",
-                  // justifyContent: "center",
+
                   alignItems: "center",
                 }}
               >
@@ -175,19 +222,21 @@ const LoginView = ({ navigation }) => {
                     </Text>
                   </View>
 
-                  <LoginCard />
+                  <LoginCard
+                    setEmail={(e) => setEmail(e)}
+                    setPassword={(e) => setPassword(e)}
+                  />
                 </View>
 
                 <View
                   style={{
                     gap: 20,
                     alignItems: "center",
-
-                    // marginTop: 10,
                   }}
                 >
                   <Pressable
                     style={{
+                      
                       padding: 15,
                       backgroundColor: "#23B26E",
                       borderRadius: 10,
@@ -197,8 +246,7 @@ const LoginView = ({ navigation }) => {
                       shadowOpacity: 0.25,
                       shadowRadius: 4,
                     }}
-                    //onPress={() => navigation.navigate("HomeScreen")}
-                    onPress={() =>  navigation.navigate("HomeScreen")}
+                    onPress={() => handlePress()}
                   >
                     <Text
                       style={{
@@ -239,7 +287,6 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: "center",
-    // width: "100%",
   },
 });
 
