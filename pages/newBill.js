@@ -1,13 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { MaterialIcons } from "@expo/vector-icons";
+import { View, StyleSheet, Text } from 'react-native';
 
 const NewBill = ({ navigation }) => {
     return (
         <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.greeting}>
+                    Good evening
+                </Text>
+                <Text style={styles.directions}>
+                    Start a New Bill
+                </Text>
+            </View>
             <View style={styles.iconContainer}>
-                <MaterialIcons name="lens" size={300} color="#D9D9D9"/> 
-                <MaterialIcons name="add" size={150} color="#747474" style={styles.innerPlus}/>
+                <View style={styles.verticalPart} />
+                <View style={styles.horizontalPart} />
             </View>
         </View>
     );
@@ -16,24 +23,48 @@ const NewBill = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F4F4FF', // Updated background color for the whole page
-    },
-    text: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    iconContainer: {
-        width: 300,   // The same size as the MaterialIcons size
-        height: 300,  // The same size as the MaterialIcons size
-        borderRadius: 150,  // Half of the width and height to make it a perfect circle
-        justifyContent: 'center',  // Center the icons vertically
-        alignItems: 'center',  // Center the icons horizontally
+        backgroundColor: '#F4F4FF',
+        alignItems: 'center', // to keep the icon in the center
         marginBottom: 100
     },
-    innerPlus: {
-        position: 'absolute', // This will make sure the plus icon overlays on top of the circle icon
+    header: {
+        flex: 1,
+        width: '100%', // this will take up the full width of the container
+        paddingTop: 20, // padding from the top of the screen
+        paddingLeft: 20, // padding from the left of the screen
+        justifyContent: 'flex-start',
+    },
+    iconContainer: {
+        width: 230,
+        height: 230,
+        borderRadius: 150,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#D9D9D9',
+        marginBottom: 200,
+    },
+    verticalPart: {
+        position: 'absolute',
+        width: 25, 
+        height: 100,
+        borderRadius: 10,
+        backgroundColor: '#747474',
+    },
+    horizontalPart: {
+        position: 'absolute',
+        width: 100,
+        height: 25,
+        borderRadius: 10,
+        backgroundColor: '#747474',
+    },
+    greeting: {
+        fontSize: 32, 
+        fontWeight: "bold",
+        marginBottom: 10, // spacing between the greeting and the directions
+    },
+    directions: {
+        fontSize: 24,
+        fontWeight: "bold",
     }
 });
 
