@@ -14,6 +14,7 @@ import waves from "./assets/waves.png";
 import NewBill from "./pages/newBill";
 import HomeScreen from "./pages/home-view";
 import LoginView from "./pages/login-view";
+import CameraScan from "./pages/camera-scan.js"
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -30,6 +31,7 @@ function App() {
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="NewBill" component={NewBill} />
         <Stack.Screen name="Login" component={LoginView} />
+        <Stack.Screen name="CameraScan" component={CameraScan} />
       </Stack.Navigator>
     </NavigationContainer>
   );
