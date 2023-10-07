@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "21653b40-997c-45db-9c1d-65107ccc3399"
+      }
+    },
+    "owner": "donda403"
   }
 }
