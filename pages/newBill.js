@@ -60,6 +60,7 @@ const NewBill = ({ navigation }) => {
         <Text style={styles.greeting}>Good evening, {userName}</Text>
         <Text style={styles.directions}>Start a New Bill</Text>
       </View>
+
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => setModalVisible(true)}
@@ -81,13 +82,27 @@ const NewBill = ({ navigation }) => {
 
       {modalVisible && (
         <View style={styles.overlay}>
+          {/* This TouchableOpacity fills the entire overlay and closes the modal when pressed */}
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            onPress={() => setModalVisible(false)}
+          />
+
           <Animated.View
             style={[
               styles.modalContainer,
               { transform: [{ translateY: modalPosition }] },
             ]}
+            {...panResponder.panHandlers}
           >
-            <TouchableOpacity onPress={() => navigation.navigate("CameraScan")}>
+            <View style={styles.dragNotch} />
+            <TouchableOpacity
+              style={styles.modalContent}
+              onPress={() => {
+                navigation.navigate("CameraScan");
+                dismissModalWithAnimation(); // This line hides the modal with the animation after navigating
+              }}
+            >
               <Icon name="camera" size={24} color="#000" />
               <Text style={styles.modalText}>Scan Receipt</Text>
             </TouchableOpacity>
@@ -168,9 +183,19 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
+    width: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    padding: 20,
+  },
+  dragNotch: {
+    width: 40,
+    height: 5,
+    backgroundColor: "gray",
+    borderRadius: 2.5,
+    marginBottom: 10,
+    alignSelf: "center",
     padding: 30,
     justifyContent: "center",
     alignItems: "center",
@@ -178,6 +203,7 @@ const styles = StyleSheet.create({
   modalContent: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   modalText: {
     marginLeft: 10,
