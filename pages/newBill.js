@@ -7,48 +7,17 @@ import {
   Image,
   TouchableOpacity,
   Animated,
-  PanResponder,
 } from "react-native";
 import waves from "../assets/waves.png";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { FIREBASE_AUTH } from "../firebaseConfig";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 const NewBill = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const modalPosition = useRef(new Animated.Value(300)).current;
-
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: (event, gestureState) => {
-      if (gestureState.dy > 0) {
-        modalPosition.setValue(gestureState.dy);
-      }
-    },
-    onPanResponderRelease: (event, gestureState) => {
-      if (gestureState.dy > 25) { 
-        setModalVisible(false);
-        modalPosition.setValue(300); // reset the position
-      } else {
-        Animated.spring(modalPosition, {
-          toValue: 0,
-          tension: 50,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  });
-
-  const dismissModalWithAnimation = () => {
-    Animated.timing(modalPosition, {
-      toValue: 300,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-    });
-  }
-
-  
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     if (modalVisible) {
@@ -66,18 +35,31 @@ const NewBill = ({ navigation }) => {
     }
   }, [modalVisible]);
 
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const user = FIREBASE_AUTH.currentUser;
+        if (user) {
+          const db = getFirestore();
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            setUserName(userDoc.data().firstName);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user name: ", error);
+      }
+    };
+
+    fetchUserName();
+  }, []);
+
   return (
     <View style={styles.container}>
-
       <View style={styles.header}>
-        <Text style={styles.greeting}>Good evening</Text>
+        <Text style={styles.greeting}>Good evening, {userName}</Text>
         <Text style={styles.directions}>Start a New Bill</Text>
       </View>
-      <TouchableOpacity 
-        style={styles.testButton} 
-        onPress={() => navigation.navigate('PickItems')}>
-        <Text style={styles.testButtonText}>Test</Text>
-      </TouchableOpacity>
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => setModalVisible(true)}
@@ -88,28 +70,24 @@ const NewBill = ({ navigation }) => {
       <View style={styles.backButtonContainer}>
         <Button title="Back" onPress={() => navigation.goBack()} color="#000" />
       </View>
+
+      <TouchableOpacity
+        style={styles.backButtonContainer}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="chevron-back-outline" size={24} color="#000" />
+      </TouchableOpacity>
       <Image source={waves} style={styles.waveBackground} />
 
       {modalVisible && (
-    <View style={styles.overlay}>
-      {/* This TouchableOpacity fills the entire overlay and closes the modal when pressed */}
-      <TouchableOpacity style={{ flex: 1 }} onPress={() => setModalVisible(false)} />
-
-      <Animated.View
+        <View style={styles.overlay}>
+          <Animated.View
             style={[
               styles.modalContainer,
               { transform: [{ translateY: modalPosition }] },
             ]}
-            {...panResponder.panHandlers}
           >
-            <View style={styles.dragNotch} />
-            <TouchableOpacity 
-              style={styles.modalContent} 
-              onPress={() => {
-                navigation.navigate("CameraScan");
-                dismissModalWithAnimation();  // This line hides the modal with the animation after navigating
-              }}
-            >
+            <TouchableOpacity onPress={() => navigation.navigate("CameraScan")}>
               <Icon name="camera" size={24} color="#000" />
               <Text style={styles.modalText}>Scan Receipt</Text>
             </TouchableOpacity>
@@ -120,14 +98,13 @@ const NewBill = ({ navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F4F4FF",
     alignItems: "center",
   },
-    backButtonContainer: {
+  backButtonContainer: {
     position: "absolute",
     top: 0,
     left: 10,
@@ -137,7 +114,7 @@ const styles = StyleSheet.create({
   header: {
     flex: 1,
     width: "100%",
-    paddingTop: 100,
+    paddingTop: 70,
     paddingLeft: 20,
     justifyContent: "flex-start",
     flexDirection: "column",
@@ -172,6 +149,7 @@ const styles = StyleSheet.create({
   },
   directions: {
     fontSize: 18,
+    color: "rgba(0,0,0,0.5)",
   },
   waveBackground: {
     position: "absolute",
@@ -190,24 +168,16 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
-    width: '100%',
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
-  },
-  dragNotch: {
-    width: 40,
-    height: 5,
-    backgroundColor: 'gray',
-    borderRadius: 2.5,
-    marginBottom: 10,
-    alignSelf: 'center',
+    padding: 30,
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'center',
   },
   modalText: {
     marginLeft: 10,
