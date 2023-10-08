@@ -25,7 +25,7 @@ const NewBill = ({ navigation }) => {
       }
     },
     onPanResponderRelease: (event, gestureState) => {
-      if (gestureState.dy > 25) { 
+      if (gestureState.dy > 25) {
         setModalVisible(false);
         modalPosition.setValue(300); // reset the position
       } else {
@@ -46,9 +46,7 @@ const NewBill = ({ navigation }) => {
     }).start(() => {
       setModalVisible(false);
     });
-  }
-
-  
+  };
 
   useEffect(() => {
     if (modalVisible) {
@@ -68,16 +66,11 @@ const NewBill = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-
       <View style={styles.header}>
         <Text style={styles.greeting}>Good evening</Text>
         <Text style={styles.directions}>Start a New Bill</Text>
       </View>
-      <TouchableOpacity 
-        style={styles.testButton} 
-        onPress={() => navigation.navigate('PickItems')}>
-        <Text style={styles.testButtonText}>Test</Text>
-      </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => setModalVisible(true)}
@@ -91,11 +84,14 @@ const NewBill = ({ navigation }) => {
       <Image source={waves} style={styles.waveBackground} />
 
       {modalVisible && (
-    <View style={styles.overlay}>
-      {/* This TouchableOpacity fills the entire overlay and closes the modal when pressed */}
-      <TouchableOpacity style={{ flex: 1 }} onPress={() => setModalVisible(false)} />
+        <View style={styles.overlay}>
+          {/* This TouchableOpacity fills the entire overlay and closes the modal when pressed */}
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            onPress={() => setModalVisible(false)}
+          />
 
-      <Animated.View
+          <Animated.View
             style={[
               styles.modalContainer,
               { transform: [{ translateY: modalPosition }] },
@@ -103,11 +99,11 @@ const NewBill = ({ navigation }) => {
             {...panResponder.panHandlers}
           >
             <View style={styles.dragNotch} />
-            <TouchableOpacity 
-              style={styles.modalContent} 
+            <TouchableOpacity
+              style={styles.modalContent}
               onPress={() => {
                 navigation.navigate("CameraScan");
-                dismissModalWithAnimation();  // This line hides the modal with the animation after navigating
+                dismissModalWithAnimation(); // This line hides the modal with the animation after navigating
               }}
             >
               <Icon name="camera" size={24} color="#000" />
@@ -120,14 +116,13 @@ const NewBill = ({ navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F4F4FF",
     alignItems: "center",
   },
-    backButtonContainer: {
+  backButtonContainer: {
     position: "absolute",
     top: 0,
     left: 10,
@@ -190,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
-    width: '100%',
+    width: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -199,15 +194,15 @@ const styles = StyleSheet.create({
   dragNotch: {
     width: 40,
     height: 5,
-    backgroundColor: 'gray',
+    backgroundColor: "gray",
     borderRadius: 2.5,
     marginBottom: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   modalContent: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   modalText: {
     marginLeft: 10,

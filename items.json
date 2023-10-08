@@ -1,0 +1,93 @@
+{
+    "items": [
+      {
+        "id": "1",
+        "name": "Veg Spring Roll",
+        "price": "$6.95",
+        "quantity": "1"
+      },
+      {
+        "id": "1",
+        "name": "Veg Spring Roll",
+        "price": "$6.95",
+        "quantity": "1"
+      },
+      {
+        "id": "2",
+        "name": "Tom Yum Soup (Small)",
+        "price": "None",
+        "quantity": "1"
+      },
+      {
+        "id": "3",
+        "name": "Soda",
+        "price": "$3.98",
+        "quantity": "2"
+      },
+      {
+        "id": "4",
+        "name": "Soda",
+        "price": "$1.99",
+        "quantity": "1"
+      },
+      {
+        "id": "5",
+        "name": "Mapo Tofu",
+        "price": "$14.95",
+        "quantity": "1"
+      },
+      {
+        "id": "6",
+        "name": "Shrimp Puff",
+        "price": "$7.95",
+        "quantity": "1"
+      },
+      {
+        "id": "7",
+        "name": "Pad Thai",
+        "price": "$11.95",
+        "quantity": "1"
+      },
+      {
+        "id": "8",
+        "name": "Grilled Calamari (Small)",
+        "price": "$11.95",
+        "quantity": "1"
+      },
+      {
+        "id": "9",
+        "name": "House Fried Rice",
+        "price": "$11.95",
+        "quantity": "1"
+      },
+      {
+        "id": "10",
+        "name": "Basil Drunken Noodles",
+        "price": "$11.95",
+        "quantity": "1"
+      },
+      {
+        "id": "11",
+        "name": "Dry Chili Chicken",
+        "price": "$16.95",
+        "quantity": "1"
+      },
+      {
+        "id": "12",
+        "name": "White Rice",
+        "price": "$3.0",
+        "quantity": "2"
+      },
+      {
+        "id": "12",
+        "name": "White Rice",
+        "price": "$3.0",
+        "quantity": "2"
+      }
+    ],
+    "summary": {
+      "tax": "$20.23",
+      "gratuity": "$5.45",
+      "total": "$74.63"
+    }
+  }
