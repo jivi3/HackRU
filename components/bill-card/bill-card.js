@@ -1,16 +1,27 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const BillCard = ({
-  restaurantName,
-  date,
-  totalBill,
-  yourShare,
-  paidBy,
-  otherPeople,
-  numOtherPeople,
-  paidWith,
-}) => {
+const BillCard = ({ restaurantName, date, totalBill, yourShare, people }) => {
+  const renderNumPeople = (people) => {
+    if (people.length > 3) {
+      return (
+        <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.5)" }}>
+          {people[0].name}, and{" "}
+          <Text style={{ color: "black", fontWeight: 500 }}>
+            {people.length - 1} others
+          </Text>
+        </Text>
+      );
+    } else {
+      return (
+        <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.5)" }}>
+          {people[0].name} and {people[1].name}
+        </Text>
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View>
@@ -26,20 +37,14 @@ const BillCard = ({
             </Text>
           </View>
         </View>
-
-        <Text style={{ fontSize: 14, color: "rgba(0,0,0,0.5)" }}>
-          {otherPeople}
-          <Text style={{ color: "black", fontWeight: 400 }}>
-            {numOtherPeople}
-          </Text>
-        </Text>
+        {people && renderNumPeople(people)}
       </View>
 
-      <View style={{ flexDirection: "row", gap: 10 }}>
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 10 }}>
         <View
           style={{
             backgroundColor: "#d9d9d9",
-            padding: 10,
+            padding: 15,
             borderRadius: 5,
           }}
         >
@@ -49,17 +54,18 @@ const BillCard = ({
           <Text
             style={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}
           >
-            {totalBill}
+            ${totalBill}
           </Text>
-          <Text style={{ textAlign: "center", fontSize: 10 }}>
+          {/* <Text style={{ textAlign: "center", fontSize: 10 }}>
             Paid by <Text style={{ fontWeight: "bold" }}> {paidBy}</Text>
-          </Text>
+          </Text> */}
         </View>
-        <LinearGradient
-          // Button Linear Gradient
-          start={{ x: 0.1, y: 0.2 }}
-          colors={["rgba(35, 178, 110, 1.0)", "rgba(35, 178, 110, 0.5)"]}
-          style={{ borderRadius: 5, padding: 10 }}
+        <View
+          style={{
+            backgroundColor: "#d9d9d9",
+            padding: 15,
+            borderRadius: 5,
+          }}
         >
           <Text style={{ textAlign: "center", fontSize: 12, fontWeight: 500 }}>
             Your share
@@ -67,10 +73,28 @@ const BillCard = ({
           <Text
             style={{ textAlign: "center", fontSize: 18, fontWeight: "bold" }}
           >
-            {yourShare}
+            ${yourShare}
           </Text>
-          <Text style={{ textAlign: "center", fontSize: 10 }}>plus tip</Text>
-        </LinearGradient>
+          {/* <Text style={{ textAlign: "center", fontSize: 10 }}>plus tip</Text> */}
+        </View>
+        <View
+          style={{
+            backgroundColor: "#d9d9d9",
+            padding: 14,
+            // paddingHorizontal: 24,
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 5,
+            gap: 2,
+          }}
+        >
+          <Text style={{ textAlign: "center", fontSize: 12, fontWeight: 500 }}>
+            Edit items
+          </Text>
+          <MaterialIcons name="edit" size={20} color="black" />
+        </View>
+
         {/* <View
           styles={{
             flexDirection: "column",
@@ -113,26 +137,23 @@ const BillCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     width: 330,
     padding: 20,
     textAlign: "left",
     backgroundColor: "rgb(255,255,255)",
-    // backgroundColor: "000",
     borderRadius: 10,
     shadowColor: "#171717",
     shadowOffset: { width: -2, height: 6 },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: 7,
     flexDirection: "column",
-    // justifyContent: "center",
-    // alignItems: "center",
     gap: 10,
   },
   titleView: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    // marginBottom: 5,
   },
 });
 
