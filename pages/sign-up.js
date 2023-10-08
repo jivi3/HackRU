@@ -107,6 +107,12 @@ const SignUp = ({ navigation }) => {
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
+            {/* <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Payment')}>
+                <Text style={styles.buttonText}>Test</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AddFriends')}>
+              <Text style={styles.buttonText}>Test 2</Text>
+            </TouchableOpacity> */}
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -141,15 +147,6 @@ const styles = StyleSheet.create({
     color: "#000",
     textAlign: "center",
   },
-  // inputContainer: {
-  //     backgroundColor: '#f4f4ff',
-  //     borderRadius: 10,
-  //     padding: 20,
-  //     shadowColor: '#000',
-  //     shadowOffset: { width: 0, height: 2 },
-  //     shadowOpacity: 0.2,
-  //     shadowRadius: 5,
-  // },
   formContainer: {
     gap: 20,
     flexDirection: "column",

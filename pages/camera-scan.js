@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-  Text,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { Camera } from "expo-camera";
 import { FIRESTORE, FIREBASE_STORAGE, FIREBASE_AUTH } from "../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Image } from "react-native";
-import LoadingSpinner from "../components/LoadingSpinner";
+import LoadingSpinner from "../components/LoadingSpinner"; // adjust the path as necessary
 import * as ImageManipulator from "expo-image-manipulator";
 import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
   getFirestore,
   onSnapshot,
-  getDoc,
-  doc,
-  setDoc,
-} from "@firebase/firestore";
+} from "firebase/firestore";
 
 export default function CameraScan({ route, navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -28,38 +25,19 @@ export default function CameraScan({ route, navigation }) {
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [isLoading, setIsLoading] = useState(false);
   const userId = FIREBASE_AUTH.currentUser?.uid;
-  const user = FIREBASE_AUTH.currentUser;
-  const db = getFirestore();
-  const [billData, setBillData] = useState();
+  const { billId } = route.params;
+  console.log("billId", billId);
+  const firestore = getFirestore();
 
-  useEffect(() => {
-    if (billData) {
-      navigation.navigate("PickItems", {
-        billData: billData,
-      });
-    }
-  }, [billData]);
-
-  const fetchMostRecentBill = async () => {
-    try {
-      const db = getFirestore();
-      const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
-
-      const bills = userDoc.data().bills;
-
-      if (bills && bills.length > 0) {
-        const mostRecentBill = bills[bills.length - 1];
-        return mostRecentBill;
-      } else {
-        console.log("No bills found for the user");
-        return null;
+  function watchUploadStatus(uid, callback) {
+    const userRef = doc(firestore, "users", uid);
+    return onSnapshot(userRef, (snapshot) => {
+      const data = snapshot.data();
+      if (data && data.uploaded) {
+        callback();
       }
-    } catch (error) {
-      console.error("Error fetching the most recent bill: ", error);
-      return null;
-    }
-  };
+    });
+  }
 
   const toggleFlash = () => {
     setFlashMode(
@@ -75,17 +53,19 @@ export default function CameraScan({ route, navigation }) {
       setHasPermission(cameraStatus.status === "granted");
     })();
   }, []);
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [capturedPhoto, setCapturedPhoto] = useState(null); // state to hold the captured photo URI
 
   const handleCapture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       setIsLoading(true);
-      setCapturedPhoto(photo.uri);
+      setCapturedPhoto(photo.uri); // Display the captured photo on the screen
 
       setTimeout(async () => {
+        // Compress the image
         const manipulatedPhoto = await compressImage(photo.uri);
 
+        // Convert the compressed image to a blob
         const response = await fetch(manipulatedPhoto.uri);
         const blob = await response.blob();
 
@@ -100,7 +80,9 @@ export default function CameraScan({ route, navigation }) {
         const uploadTask = uploadBytesResumable(storageRef, blob);
         uploadTask.on(
           "state_changed",
-          (snapshot) => {},
+          (snapshot) => {
+            // Handle the upload progress if needed
+          },
           (error) => {
             console.error("Error uploading image: ", error);
           },
@@ -108,29 +90,55 @@ export default function CameraScan({ route, navigation }) {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             console.log("File available at", downloadURL);
             setIsLoading(true);
+            // Setup the Firestore listener right here
             const unsubscribe = onSnapshot(
               doc(FIRESTORE, "users", userId),
-              async (snapshot) => {
+              (snapshot) => {
                 const data = snapshot.data();
                 if (data && data.uploaded) {
-                  const billInformation = await retrieveLatestBillItems();
-                  setIsLoading(false);
-                  setBillData(billInformation);
-                  setCapturedPhoto(null);
-                  navigation.navigate("PickItems");
-                  unsubscribe();
+                  setTimeout(() => {
+                    navigation.navigate("PickItems", { billId: billId });
+                    setIsLoading(false);
+                    setCapturedPhoto(null); // Hide the captured photo
+                    unsubscribe(); // Important: detach the listener once done.
+                  }, 2000); // 2000 milliseconds = 2 seconds
                 }
               }
             );
           }
         );
-      }, 500);
+      }, 500); // Delay of half a second // Display the captured photo for 1 second
     }
   };
 
   useEffect(() => {
-    console.log("isLoading", isLoading);
-  }, [isLoading]);
+    const fetchUserBills = async () => {
+      try {
+        const querySnapshot = await getDocs(
+          query(
+            collection(db, "bills"),
+            where("timeCreated", "array-contains", user.uid)
+          )
+        );
+        const unsubscribe = onSnapshot(
+          query(
+            collection(db, "bills"),
+            where("users", "array-contains", user.uid)
+          ),
+          (querySnapshot) => {
+            const billSnapshots = [];
+            querySnapshot.forEach((doc) => {
+              billSnapshots.push(doc);
+            });
+            setUserBills(billSnapshots);
+          }
+        );
+      } catch (error) {
+        console.error("Error fetching user bills: ", error);
+      }
+    };
+    fetchUserBills();
+  }, []);
 
   const compressImage = async (uri) => {
     const compressed = await ImageManipulator.manipulateAsync(
@@ -140,7 +148,9 @@ export default function CameraScan({ route, navigation }) {
     );
 
     const imageSizeInBytes = compressed.size;
-    const imageSizeInMB = imageSizeInBytes / (1024 * 1024);
+    const imageSizeInMB = imageSizeInBytes / (1024 * 1024); // Convert to MB
+
+    console.log(imageSizeInMB);
 
     console.log(imageSizeInMB);
 
@@ -226,8 +236,8 @@ const styles = StyleSheet.create({
   },
   flashButton: {
     position: "absolute",
-    right: 20,
-    top: 20,
+    right: 20, // 20 pixels from the right edge
+    top: 20, // 20 pixels from the top edge
     padding: 10,
   },
 
@@ -257,7 +267,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
-    zIndex: 1000,
+    backgroundColor: "rgba(0, 0, 0, 0.85)", // Darkened background
+    zIndex: 1000, // Ensure it's on top
   },
 });
