@@ -1,7 +1,13 @@
-import React from 'react';
+import React from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 
-const RegisterCard = ({ setFirstName, setLastName, setEmail, setPassword, setConfirmPassword }) => {
+const RegisterCard = ({
+  setFirstName,
+  setLastName,
+  setEmail,
+  setPassword,
+  setConfirmPassword,
+}) => {
   return (
     <View style={styles.registerCard}>
       <TextInput
