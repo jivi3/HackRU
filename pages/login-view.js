@@ -7,9 +7,9 @@ import {
   ImageBackground,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,
   StatusBar,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { useState } from "react";
 import LoginCard from "../components/login-card/login-card";
@@ -26,23 +26,9 @@ const LoginView = ({ navigation }) => {
   const signIn = async () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate("NewBill");
+      navigation.navigate("HomeScreen");
     } catch (error) {
       alert("Sign in Failed: " + error.message);
-    }
-  };
-
-  const signUp = async () => {
-    try {
-      const response = await auth().createUserWithEmailAndPassword(
-        email,
-        password
-      );
-
-      console.log("User registered:", response);
-    } catch (error) {
-      alert("Sign up Failed: " + error.message);
-      console.log(error);
     }
   };
 
@@ -126,10 +112,19 @@ const LoginView = ({ navigation }) => {
                   Login
                 </Text>
               </Pressable>
-              <Text style={{ textAlign: "center" }}>
+              <View style={{ textAlign: "center" }}>
                 Don't have an account?
-                <Text style={{ fontWeight: "bold" }}> Sign Up</Text>
-              </Text>
+                <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Sign
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -160,6 +155,8 @@ const LoginView = ({ navigation }) => {
                     fontSize: 70,
                     fontWeight: 700,
                     color: Platform.OS === "web" ? "#000" : "#f4f4ff",
+                    shadowColor: "#171717",
+
                     textAlign: "center",
                   }}
                 >
@@ -184,7 +181,7 @@ const LoginView = ({ navigation }) => {
                         fontWeight: 400,
                       }}
                     >
-                      Please login to continue
+                      Please login to Continue
                     </Text>
                   </View>
 
@@ -211,7 +208,6 @@ const LoginView = ({ navigation }) => {
                       shadowOpacity: 0.25,
                       shadowRadius: 4,
                     }}
-                    //onPress={() => navigation.navigate("HomeScreen")}
                     onPress={() => onPressFunction()}
                   >
                     <Text
@@ -225,10 +221,22 @@ const LoginView = ({ navigation }) => {
                       Login
                     </Text>
                   </Pressable>
-                  <Text style={{ textAlign: "center" }}>
-                    Don't have an account?
-                    <Text style={{ fontWeight: "bold" }}> Sign Up</Text>
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text>Don't have an account?</Text>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("SignUp")}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          textDecorationLine: "underline",
+                          marginLeft: 5,
+                        }}
+                      >
+                        Sign Up
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>
