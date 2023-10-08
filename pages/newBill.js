@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   Animated,
+  PanResponder,
 } from "react-native";
 import waves from "../assets/waves.png";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -18,6 +19,38 @@ const NewBill = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const modalPosition = useRef(new Animated.Value(300)).current;
   const [userName, setUserName] = useState("");
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (event, gestureState) => {
+      if (gestureState.dy > 0) {
+        modalPosition.setValue(gestureState.dy);
+      }
+    },
+    onPanResponderRelease: (event, gestureState) => {
+      if (gestureState.dy > 25) {
+        setModalVisible(false);
+        modalPosition.setValue(300); // reset the position
+      } else {
+        Animated.spring(modalPosition, {
+          toValue: 0,
+          tension: 50,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  });
+
+  const dismissModalWithAnimation = () => {
+    Animated.timing(modalPosition, {
+      toValue: 300,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setModalVisible(false);
+    });
+  };
 
   useEffect(() => {
     if (modalVisible) {
@@ -58,19 +91,18 @@ const NewBill = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.greeting}>Good evening, {userName}</Text>
-        <Text style={styles.directions}>Start a New Bill</Text>
+        <Text style={styles.directions}>Start a new bill</Text>
       </View>
 
       <TouchableOpacity
         style={styles.iconContainer}
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          setModalVisible(true);
+        }}
       >
         <View style={styles.verticalPart} />
         <View style={styles.horizontalPart} />
       </TouchableOpacity>
-      <View style={styles.backButtonContainer}>
-        <Button title="Back" onPress={() => navigation.goBack()} color="#000" />
-      </View>
 
       <TouchableOpacity
         style={styles.backButtonContainer}
@@ -78,6 +110,7 @@ const NewBill = ({ navigation }) => {
       >
         <Ionicons name="chevron-back-outline" size={24} color="#000" />
       </TouchableOpacity>
+
       <Image source={waves} style={styles.waveBackground} />
 
       {modalVisible && (
@@ -100,7 +133,7 @@ const NewBill = ({ navigation }) => {
               style={styles.modalContent}
               onPress={() => {
                 navigation.navigate("CameraScan");
-                dismissModalWithAnimation(); // This line hides the modal with the animation after navigating
+                dismissModalWithAnimation();
               }}
             >
               <Icon name="camera" size={24} color="#000" />
@@ -112,7 +145,6 @@ const NewBill = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -178,6 +210,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
+    // zIndex: 99,
     right: 0,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
@@ -188,6 +221,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
+    // zIndex: 999,
   },
   dragNotch: {
     width: 40,
@@ -196,9 +230,6 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     marginBottom: 10,
     alignSelf: "center",
-    padding: 30,
-    justifyContent: "center",
-    alignItems: "center",
   },
   modalContent: {
     flexDirection: "row",
