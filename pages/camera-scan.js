@@ -63,16 +63,24 @@ export default function CameraScan({ route, navigation }) {
 
   async function fetchBillItems(billId) {
     try {
+      const billItemsObject = { unclaimed: {} };
       const billRef = doc(db, "bills", billId);
       const billDoc = await getDoc(billRef);
-      const billItemsArray = [];
+
       if (billDoc.exists) {
         const billD = billDoc.data();
-        if (billD && billD.items) {
-          billD.items.unclaimed.forEach((item) => {
-            billItemsArray.push(item);
+
+        if (billD && billD.items && billD.items.unclaimed) {
+          Object.keys(billD.items.unclaimed).forEach((itemId) => {
+            const item = billD.items.unclaimed[itemId];
+            billItemsObject.unclaimed[itemId] = {
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            };
           });
-          return billItemsArray;
+
+          return billItemsObject;
         } else {
           throw new Error("Expected data structure not found in the bill");
         }

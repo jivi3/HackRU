@@ -27,8 +27,7 @@ import {
 import { FIREBASE_AUTH } from "../firebaseConfig";
 
 const AddFriends = ({ navigation }) => {
-  //this input key is being used to clear the input box
-  const emailInputRef = React.useRef(null); // 1. Create a reference for the TextInput.
+  const emailInputRef = React.useRef(null);
 
   const [friendEmail, setFriendEmail] = React.useState("");
   const [addedFriends, setAddedFriends] = React.useState([]);
@@ -36,11 +35,9 @@ const AddFriends = ({ navigation }) => {
   const addFriend = async () => {
     const db = getFirestore();
 
-    // Create a query against the users collection where email is the provided friendEmail
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", friendEmail));
 
-    // Execute the query
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
@@ -55,7 +52,6 @@ const AddFriends = ({ navigation }) => {
 
         const currentUserUID = FIREBASE_AUTH.currentUser.uid;
 
-        // Query to get all bills created by the current user
         const billsRef = collection(db, "bills");
         const allBillsQuery = query(
           billsRef,
@@ -67,7 +63,6 @@ const AddFriends = ({ navigation }) => {
           id: doc.id,
         }));
 
-        // Sort all bills by timeCreated in descending order to get the most recent bill
         allBills.sort(
           (a, b) => new Date(b.timeCreated) - new Date(a.timeCreated)
         );
@@ -76,7 +71,6 @@ const AddFriends = ({ navigation }) => {
         if (mostRecentBill) {
           const billDocRef = doc(db, "bills", mostRecentBill.id);
 
-          // Update the most recent bill document by adding the friend's UID to the "users" array
           await updateDoc(billDocRef, {
             users: arrayUnion(friendUID),
           });
@@ -85,7 +79,6 @@ const AddFriends = ({ navigation }) => {
           return;
         }
 
-        // Add the friend's UID to the current user's friends array in Firestore
         const currentUserDocRef = doc(db, "users", currentUserUID);
         await updateDoc(currentUserDocRef, {
           friends: arrayUnion(friendUID),
@@ -110,7 +103,7 @@ const AddFriends = ({ navigation }) => {
           </View>
           <View style={styles.inputContainer}>
             <TextInput
-              ref={emailInputRef} // Attach the reference to the TextInput.
+              ref={emailInputRef}
               style={styles.input}
               placeholder="Friend's Email"
               keyboardType="email-address"

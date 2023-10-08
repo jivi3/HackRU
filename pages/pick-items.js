@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   View,
   Text,
-  TouchableOpacity,
+  TouchableHighlight,
   StyleSheet,
   ScrollView,
   TextInput,
@@ -11,7 +11,9 @@ import {
   Button,
 } from "react-native";
 import Modal from "react-native-modal";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { SwipeListView } from "react-native-swipe-list-view";
 import { currencyFormatter } from "../utils";
 import { FIREBASE_AUTH } from "../firebaseConfig";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
@@ -22,20 +24,24 @@ const PickItems = ({ route, navigation }) => {
   const [editedName, setEditedName] = useState("");
   const [editedPrice, setEditedPrice] = useState("");
   const [editedQty, setEditedQty] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [itemsWithSelect, setItemsWithSelect] = useState({});
   const [selectedSummaryField, setSelectedSummaryField] = useState(null);
   const [editedSummaryValue, setEditedSummaryValue] = useState("");
 
   const user = FIREBASE_AUTH.currentUser;
   const { billData } = route.params;
+  const [items, setItems] = useState(billData["items"]);
+
   const db = getFirestore();
 
-  const truncateText = (text, length = 15) => {
-    return text.length > length ? text.substr(0, length) + "..." : text;
-  };
+  console.log("billData", billData);
+  console.log("items", items);
 
-  const deleteItemById = (id) => {
-    const filteredItems = billData.items.filter((item) => item.id !== id);
-    setItems(filteredItems); // Please note: You might want to update this in the Firestore too.
+  const truncateText = (text, length = 15) => {
+    if (text) {
+      return text.length > length ? text.substr(0, length) + "..." : text;
+    }
   };
 
   const openEditModal = (item = null) => {
@@ -54,31 +60,27 @@ const PickItems = ({ route, navigation }) => {
   };
 
   const handleEditSave = async () => {
-    console.log("Bill id:", billData.id);
-
     if (currentItem) {
-      const itemIndex = billData.items.findIndex(
-        (item) => item.id === currentItem.id
+      const itemExists = billData.items.unclaimed.hasOwnProperty(
+        currentItem.id
       );
 
-      if (itemIndex !== -1) {
+      if (itemExists) {
         const updatedItem = {
-          ...billData.items[itemIndex],
+          ...billData.items.unclaimed[currentItem.id],
           name: editedName,
           price: editedPrice,
           quantity: editedQty,
         };
 
-        billData.items[itemIndex] = updatedItem;
+        billData.items.unclaimed[currentItem.id] = updatedItem;
 
-        // Reference to the specific bill in Firestore
         const billDocRef = doc(db, "bills", billData.id);
 
-        // Update the Firestore Document
         try {
           await setDoc(
             billDocRef,
-            { items: { unclaimed: billData.items } },
+            { items: { unclaimed: billData.items.unclaimed } },
             { merge: true }
           );
           console.log("Firestore document updated successfully!");
@@ -88,21 +90,22 @@ const PickItems = ({ route, navigation }) => {
         setModalVisible(false);
       }
     } else {
+      const newItemId = Date.now().toString();
       const newItem = {
+        id: newItemId,
         name: editedName,
         price: editedPrice,
         quantity: parseFloat(editedQty),
       };
-      billData.items.push(newItem);
 
-      // Reference to the specific bill in Firestore
+      billData.items.unclaimed[newItemId] = newItem;
+
       const billDocRef = doc(db, "bills", billData.id);
 
-      // Update the Firestore Document with the new item
       try {
         await setDoc(
           billDocRef,
-          { items: { unclaimed: billData.items } },
+          { items: { unclaimed: billData.items.unclaimed } },
           { merge: true }
         );
         console.log("New item added successfully to Firestore!");
@@ -113,57 +116,188 @@ const PickItems = ({ route, navigation }) => {
     }
   };
 
+  console.log("Selecteditems", selectedItems);
+
+  useEffect(() => {
+    const sItems = {};
+
+    if (items && items.unclaimed) {
+      Object.keys(items.unclaimed).forEach((itemId) => {
+        const item = items.unclaimed[itemId];
+        sItems[itemId] = {
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          selected: false,
+        };
+      });
+    }
+
+    setItems(sItems);
+  }, []);
+
+  const handleLeftActionStatusChange = (statusData) => {
+    const { key, isActivated } = statusData;
+
+    if (isActivated) {
+      const item = items[key];
+      const newItem = {
+        id: key,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      };
+
+      setSelectedItems((prevSelectedItems) => {
+        if (prevSelectedItems.some((existingItem) => existingItem.id === key)) {
+          return prevSelectedItems;
+        } else {
+          return [...prevSelectedItems, newItem];
+        }
+      });
+    }
+  };
+
+  const handleRightActionStatusChange = (statusData) => {
+    const { key, isActivated } = statusData;
+
+    if (isActivated) {
+      const item = items[key];
+      const newItem = {
+        id: key,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      };
+      console.log("newItem", newItem);
+      setSelectedItems((prevItems) => prevItems.filter((i) => i.id !== key));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <Text style={styles.header}>Bill Items</Text>
-        {billData.users[0] === user.uid && (
-          <Text style={styles.subHeader}>Select to edit</Text>
-        )}
-        <ScrollView
-          contentInset={{ top: 0, left: 0, bottom: 60, right: 0 }}
-          showsVerticalScrollIndicator={false}
-          style={{ height: 580, padding: 12 }}
-        >
-          <View style={styles.itemsContainer}>
-            {billData.items &&
-              billData.items.map((item) => {
-                if (billData.users[0] === user.uid) {
-                  return (
-                    <TouchableOpacity
-                      style={styles.item}
-                      onPress={() => openEditModal(item)}
-                    >
-                      <Text style={styles.itemTitle}>
-                        {truncateText(item.name)}
-                      </Text>
-                      <View style={styles.quantityBox}>
-                        <Text style={styles.quantityText}>
-                          {Math.floor(item.quantity)}
-                        </Text>
-                      </View>
-                      <Text style={styles.itemPrice}>
-                        ${currencyFormatter(item.price)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                } else
-                  return (
-                    <View style={styles.item}>
-                      <Text style={styles.itemTitle}>{item.name}</Text>
-                      <View style={styles.quantityBox}>
-                        <Text style={styles.quantityText}>
-                          {Math.floor(item.quantity)}
-                        </Text>
-                      </View>
-                      <Text style={styles.itemPrice}>
-                        ${currencyFormatter(item.price)}
-                      </Text>
-                    </View>
-                  );
-              })}
-          </View>
-        </ScrollView>
+        <View style={{ padding: 15 }}>
+          <Text style={styles.header}>Bill Items</Text>
+          {billData.users[0] === user.uid ? (
+            <Text style={styles.subHeader}>
+              Select to edit, Swipe to select
+            </Text>
+          ) : (
+            <Text style={styles.subHeader}>Swipe to select</Text>
+          )}
+        </View>
+        <SwipeListView
+          data={Object.entries(items).map(([id, item]) => ({
+            ...item,
+            id,
+          }))}
+          keyExtractor={(item) => item.id}
+          renderItem={(data, rowMap) =>
+            billData.users[0] === user.uid ? (
+              <TouchableHighlight
+                key={data.item.id}
+                style={{
+                  marginHorizontal: 10,
+                  borderRadius: 10,
+
+                  padding: 0,
+                  marginBottom: 10,
+                }}
+                onPress={() => openEditModal(data.item)}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: 20,
+                    borderRadius: 10,
+                    transition: "1s",
+                    backgroundColor: data.item.selected ? "#23B26E" : "#fff",
+                    shadowColor: "#171717",
+                    shadowOffset: { width: -1, height: 3 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                  }}
+                >
+                  <Text style={styles.itemTitle}>
+                    {truncateText(data.item.name)}
+                  </Text>
+                  <View style={styles.quantityBox}>
+                    <Text style={styles.quantityText}>
+                      {Math.floor(data.item.quantity)}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemPrice}>
+                    ${currencyFormatter(data.item.price)}
+                  </Text>
+                </View>
+              </TouchableHighlight>
+            ) : (
+              <View
+                key={index}
+                style={{
+                  marginHorizontal: 10,
+                  borderRadius: 10,
+                  padding: 0,
+                  marginBottom: 10,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: 20,
+                    borderRadius: 10,
+                    transition: "1s",
+                    backgroundColor: data.item.selected ? "#23B26E" : "#fff",
+                    shadowColor: "#171717",
+                    shadowOffset: { width: -1, height: 3 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                  }}
+                >
+                  <Text style={styles.itemTitle}>{data.item.name}</Text>
+                  <View style={styles.quantityBox}>
+                    <Text style={styles.quantityText}>
+                      {Math.floor(data.item.quantity)}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemPrice}>
+                    ${currencyFormatter(data.item.price)}
+                  </Text>
+                </View>
+              </View>
+            )
+          }
+          renderHiddenItem={(data, rowMap) => (
+            <View style={styles.rowBack}>
+              <MaterialCommunityIcons
+                name="cart-plus"
+                size={24}
+                color="black"
+              />
+              <MaterialCommunityIcons
+                style={{ marginRight: 14 }}
+                name="cart-remove"
+                size={24}
+                color="black"
+              />
+            </View>
+          )}
+          rightActivationValue={-40}
+          leftActivationValue={40}
+          rightOpenValue={-20}
+          leftOpenValue={20}
+          onRightActionStatusChange={handleRightActionStatusChange}
+          onLeftActionStatusChange={handleLeftActionStatusChange}
+          stopRightSwipe={-80}
+          stopLeftSwipe={80}
+          style={{ height: 560, padding: 20 }}
+        />
+
         <LinearGradient
           style={{ width: "100%", marginTop: -100, height: 100 }}
           colors={["rgba(244, 244, 255, 0.1)", "rgba(244, 244, 255, 0.8)"]}
@@ -179,38 +313,53 @@ const PickItems = ({ route, navigation }) => {
               display: "flex",
             }}
           >
-            <TouchableOpacity
+            <TouchableHighlight
+              activeOpacity={1}
+              underlayColor="#3ade90"
               style={styles.addItemButton}
               onPress={() => openEditModal()}
             >
               <Text style={styles.addIcon}>+</Text>
-            </TouchableOpacity>
+            </TouchableHighlight>
           </View>
         )}
+        <View style={{ alignItems: "center" }}>
+          <View style={styles.summary}>
+            <View style={{ flexDirection: "row", gap: 5 }}>
+              <Text style={styles.summaryText}>Tax</Text>
+              <Text style={styles.summaryValue}>
+                ${currencyFormatter(billData.summary.tax)}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 5 }}>
+              <Text style={styles.summaryText}>Gratuity</Text>
 
-        <View style={styles.summary}>
-          <Text style={styles.summaryText}>Tax</Text>
-          <Text style={styles.summaryValue}>
-            ${currencyFormatter(billData.summary.tax)}
-          </Text>
+              <Text style={styles.summaryValue}>
+                ${currencyFormatter(billData.summary.gratuity)}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 5 }}>
+              <Text style={styles.summaryText}>Total</Text>
+              <Text style={styles.summaryValue}>
+                ${currencyFormatter(billData.summary.total)}
+              </Text>
+            </View>
+          </View>
 
-          <Text style={styles.summaryText}>Gratuity</Text>
-          <Text style={styles.summaryValue}>
-            ${currencyFormatter(billData.summary.gratuity)}
-          </Text>
-
-          <Text style={styles.summaryText}>Total</Text>
-          <Text style={styles.summaryValue}>
-            ${currencyFormatter(billData.summary.total)}
-          </Text>
+          <TouchableHighlight
+            activeOpacity={1}
+            underlayColor="#3ade90"
+            style={styles.continueButton}
+            onPress={() =>
+              navigation.navigate("Payment", {
+                selectedItems: selectedItems,
+                billData: billData,
+              })
+            }
+          >
+            <Text style={styles.continueText}>Continue</Text>
+          </TouchableHighlight>
         </View>
-
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => navigation.navigate("HomeScreen")}
-        >
-          <Text style={styles.continueText}>Continue</Text>
-        </TouchableOpacity>
         <Modal
           isVisible={isModalVisible}
           onBackdropPress={() => setModalVisible(false)}
@@ -239,16 +388,17 @@ const PickItems = ({ route, navigation }) => {
               style={styles.input}
               keyboardType="numeric"
             />
-            <TouchableOpacity
-              activeOpacity={0.1}
+            <TouchableHighlight
               onPress={() => {
                 console.log("Save button pressed");
                 handleEditSave();
               }}
               style={styles.saveButton}
+              activeOpacity={1}
+              underlayColor="#3ade90"
             >
               <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+            </TouchableHighlight>
           </View>
         </Modal>
       </SafeAreaView>
@@ -260,7 +410,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 30,
-    paddingHorizontal: 20,
+
     backgroundColor: "#F4f4ff",
   },
   billsContainer: {
@@ -283,16 +433,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 20,
-    marginHorizontal: 10,
     borderRadius: 10,
-    marginBottom: 10,
     backgroundColor: "#fff",
     shadowColor: "#171717",
     shadowOffset: { width: -1, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-
   itemSelected: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -341,6 +488,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginVertical: 15,
+    paddingHorizontal: 20,
+    gap: 10,
   },
   summaryItem: {
     flex: 1,
@@ -356,6 +505,7 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     padding: 15,
+    width: 200,
     backgroundColor: "#23B26E",
     alignItems: "center",
     borderRadius: 5,
@@ -417,6 +567,16 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "bold",
     fontSize: 14,
+  },
+
+  rowBack: {
+    alignItems: "center",
+
+    flex: 1,
+    flexDirection: "row",
+    marginHorizontal: 2,
+    justifyContent: "space-between",
+    paddingLeft: 15,
   },
 });
 
