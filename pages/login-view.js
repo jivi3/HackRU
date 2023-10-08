@@ -10,7 +10,6 @@ import {
   Alert,
   StatusBar,
   Platform,
-  TouchableOpacity,
 } from "react-native";
 import { useState } from "react";
 import LoginCard from "../components/login-card/login-card";
@@ -27,10 +26,7 @@ const LoginView = ({ navigation }) => {
   const signIn = async () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
-      //alert("Success");
-      //console.log(response);
       navigation.navigate("NewBill");
-      // Navigate to the main/home screen or any other action on successful sign-in.
     } catch (error) {
       alert("Sign in Failed: " + error.message);
     }
@@ -42,8 +38,8 @@ const LoginView = ({ navigation }) => {
         email,
         password
       );
+
       console.log("User registered:", response);
-      // Send verification email, or navigate to a welcome screen, or other actions on successful sign-up.
     } catch (error) {
       alert("Sign up Failed: " + error.message);
       console.log(error);
@@ -61,10 +57,7 @@ const LoginView = ({ navigation }) => {
           <View
             style={{
               padding: 22,
-              // backgroundColor: "#f4f4ff",
               borderRadius: 20,
-              // bottom: 0,
-              // marginTop: 10,
             }}
           >
             <Text
@@ -72,10 +65,6 @@ const LoginView = ({ navigation }) => {
                 fontSize: 70,
                 fontWeight: 700,
                 color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-                // shadowColor: "#171717",
-                // shadowOffset: { width: -1, height: 2 },
-                // shadowOpacity: 0.25,
-                // shadowRadius: 2,
                 textAlign: "center",
               }}
             >
@@ -86,10 +75,7 @@ const LoginView = ({ navigation }) => {
           <View
             style={{
               gap: 20,
-              // width: "120%",
-              // height: "100%",
               flexDirection: "column",
-              // justifyContent: "center",
               alignItems: "center",
             }}
           >
@@ -114,8 +100,6 @@ const LoginView = ({ navigation }) => {
               style={{
                 gap: 20,
                 alignItems: "center",
-
-                // marginTop: 10,
               }}
             >
               <Pressable
@@ -142,15 +126,10 @@ const LoginView = ({ navigation }) => {
                   Login
                 </Text>
               </Pressable>
-              <View style={{ textAlign: "center" }}>
-            Don't have an account?
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                <Text style={{ fontWeight: "bold", textDecorationLine: 'underline' }}>
-                    Sign
-                </Text>
-            </TouchableOpacity>
-        </View>
-
+              <Text style={{ textAlign: "center" }}>
+                Don't have an account?
+                <Text style={{ fontWeight: "bold" }}> Sign Up</Text>
+              </Text>
             </View>
           </View>
         </View>
@@ -173,10 +152,7 @@ const LoginView = ({ navigation }) => {
               <View
                 style={{
                   padding: 22,
-                  // backgroundColor: "#f4f4ff",
                   borderRadius: 20,
-                  // bottom: 0,
-                  // marginTop: 10,
                 }}
               >
                 <Text
@@ -184,10 +160,6 @@ const LoginView = ({ navigation }) => {
                     fontSize: 70,
                     fontWeight: 700,
                     color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-                    // shadowColor: "#171717",
-                    // shadowOffset: { width: -1, height: 2 },
-                    // shadowOpacity: 0.25,
-                    // shadowRadius: 2,
                     textAlign: "center",
                   }}
                 >
@@ -198,10 +170,7 @@ const LoginView = ({ navigation }) => {
               <View
                 style={{
                   gap: 20,
-                  // width: "120%",
-                  // height: "100%",
                   flexDirection: "column",
-                  // justifyContent: "center",
                   alignItems: "center",
                 }}
               >
@@ -215,7 +184,7 @@ const LoginView = ({ navigation }) => {
                         fontWeight: 400,
                       }}
                     >
-                      Please login to Continue
+                      Please login to continue
                     </Text>
                   </View>
 
@@ -229,8 +198,6 @@ const LoginView = ({ navigation }) => {
                   style={{
                     gap: 20,
                     alignItems: "center",
-
-                    // marginTop: 10,
                   }}
                 >
                   <Pressable
@@ -258,14 +225,10 @@ const LoginView = ({ navigation }) => {
                       Login
                     </Text>
                   </Pressable>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text>Don't have an account?</Text>
-                      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                          <Text style={{ fontWeight: "bold", textDecorationLine: 'underline', marginLeft: 5 }}>
-                              Sign Up
-                          </Text>
-                      </TouchableOpacity>
-                    </View>
+                  <Text style={{ textAlign: "center" }}>
+                    Don't have an account?
+                    <Text style={{ fontWeight: "bold" }}> Sign Up</Text>
+                  </Text>
                 </View>
               </View>
             </View>
@@ -290,7 +253,6 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     justifyContent: "center",
-    // width: "100%",
   },
 });
 

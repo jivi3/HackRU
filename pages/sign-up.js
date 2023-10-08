@@ -13,9 +13,15 @@ import {
 } from "react-native";
 import waves from "../assets/waves.png";
 import RegisterCard from "../components/register-card/register-card";
-import { FIREBASE_AUTH } from "../firebaseConfig";
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  setDoc,
+} from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { FIREBASE_AUTH } from "../firebaseConfig"; // assuming you have the auth instance exported from firebaseConfig
 
 const SignUp = ({ navigation }) => {
   const [firstName, setFirstName] = useState("");
@@ -24,6 +30,10 @@ const SignUp = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const setEmailWrapper = (value) => {
+    setEmail(value);
+  };
+
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
@@ -31,23 +41,34 @@ const SignUp = ({ navigation }) => {
     }
 
     try {
-      // Register the user using Firebase Authentication
-      await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      // Firebase authentication for user registration
+      const userCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
+      const user = userCredential.user; // Extracting the authenticated user
 
-      // TODO: After successfully registering, save user data to Firestore or navigate to another screen
-      const db = getFirestore(); // Initialize Firestore
-      const docRef = await addDoc(collection(db, "users"), {
+      // Initialize Firestore
+      const db = getFirestore();
+
+      // Store user data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        // Use setDoc instead of addDoc here
         firstName: firstName,
         lastName: lastName,
         email: email,
+        // ... [other fields]
       });
-      console.log("User added with ID: ", docRef.id);
 
-      // Optionally navigate to a different screen
-      navigation.navigate("HomeScreen"); // or wherever you want to redirect
-    } catch (error) {
-      console.error("Error during sign up: ", error);
-      alert("Sign up failed: " + error.message);
+      console.log("User data added with UID: ", user.uid);
+      alert("Success!");
+      navigation.navigate("NewBill");
+    } catch (e) {
+      console.error("Error registering user: ", e);
+      if (e.code && e.message) {
+        alert(e.message);
+      }
     }
   };
 
@@ -61,12 +82,28 @@ const SignUp = ({ navigation }) => {
           </View>
           <View style={styles.inputContainer}>
             <RegisterCard
-              setFirstName={setFirstName}
-              setLastName={setLastName}
-              setEmail={setEmail}
-              setPassword={setPassword}
-              setConfirmPassword={setConfirmPassword}
+              setFirstName={(value) => {
+                setFirstName(value);
+                //console.log("First Name:", value);
+              }}
+              setLastName={(value) => {
+                setLastName(value);
+                //console.log("Last Name:", value);
+              }}
+              setEmail={(value) => {
+                setEmailWrapper(value);
+                //console.log("Email:", value);
+              }}
+              setPassword={(value) => {
+                setPassword(value);
+                //console.log("Password:", value);
+              }}
+              setConfirmPassword={(value) => {
+                setConfirmPassword(value);
+                //console.log("Confirm Password:", value);
+              }}
             />
+
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
