@@ -10,10 +10,16 @@ import { MaterialIcons } from "@expo/vector-icons";
 import BillCard from "../components/bill-card/bill-card";
 import waves from "../assets/waves.png";
 
+const people = [
+  { name: "Darshan Patil" },
+  { name: "Jivi Irivichetty" },
+  { name: "Rishi Parmar" },
+  { name: "Indraneel Vaka" },
+];
+
 function HomeScreen({ navigation }) {
   return (
     <View>
-      {/* <Image source={waves} style={styles.bgImage} resizeMode="cover" /> */}
       <SafeAreaView style={styles.container}>
         <View style={styles.dashboardContainer}>
           <View style={styles.titleContainer}>
@@ -36,7 +42,7 @@ function HomeScreen({ navigation }) {
               <MaterialIcons
                 name="add-box"
                 size={50}
-                color="rgba(0,0,0,0.4)"
+                color="#23B26E"
                 onPress={() => navigation.navigate("NewBill")}
               />
             </View>
@@ -53,8 +59,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -62,8 +67,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -71,8 +75,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -80,8 +83,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -89,8 +91,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -98,8 +99,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -107,8 +107,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -116,8 +115,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
               <BillCard
                 restaurantName={"Mithaas"}
@@ -125,8 +123,7 @@ function HomeScreen({ navigation }) {
                 paidBy={"Indra"}
                 yourShare={"73.46"}
                 totalBill={"74.63"}
-                otherPeople={"with dpatil1128 and "}
-                numOtherPeople={"2 others"}
+                people={people}
               />
             </View>
           </ScrollView>
@@ -138,11 +135,9 @@ function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "column",
-  },
-  bgImage: {
-    position: "absolute",
-    bottom: 54,
+    // flex: 1,
+    backgroundColor: "#f4f4ff",
+    // flexDirection: "column",
   },
   dashboardContainer: {
     padding: 20,
@@ -152,6 +147,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 15,
   },
   billsContainer: {
     justifyContent: "center",
