@@ -1,162 +1,163 @@
+import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
     View,
-    Pressable,
+    Text,
+    TextInput,
+    StyleSheet,
+    TouchableOpacity,
     SafeAreaView,
-    ImageBackground,
+    Image,
+    Platform,
     TouchableWithoutFeedback,
     Keyboard,
-    Alert,
-    StatusBar,
-    Platform,
-  } from "react-native";
-  import { useState } from "react";
-  import LoginCard from "../components/login-card/login-card"; // Assuming you might reuse this card for sign-up
-  import loginwaves from "../assets/loginwaves.png";
-  
-  import { createUserWithEmailAndPassword } from "firebase/auth";
-  import { FIREBASE_AUTH } from "../firebaseConfig";
-  
-  const SignUpView = ({ navigation }) => {
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
-  
-    const auth = FIREBASE_AUTH;
-  
-    const signUp = async () => {
-      try {
-        const response = await createUserWithEmailAndPassword(auth, email, password);
-        console.log("User registered:", response);
-        navigation.navigate("LoginView");
-        // Navigate back to login screen or any other action on successful sign-up.
-      } catch (error) {
-        alert("Sign up Failed: " + error.message);
-        console.log(error);
-      }
+} from 'react-native';
+import waves from '../assets/waves.png';
+import RegisterCard from '../components/register-card/register-card';
+
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+
+
+
+const SignUp = ({ navigation }) => {
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    const handleSignUp = async () => {
+        if (password !== confirmPassword) {
+            alert('Passwords do not match!');
+            return;
+        }
+    
+        // TODO: Handle the signup logic here. (e.g., with Firebase Authentication)
+    
+        // After successfully signing up, save user data to Firestore
+        const db = getFirestore();  // Initialize Firestore
+    
+        try {
+            const docRef = await addDoc(collection(db, "users"), {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                // Do NOT save passwords directly in Firestore for security reasons.
+                // Passwords should be managed through Firebase Authentication or another secure method.
+            });
+            console.log("User added with ID: ", docRef.id);
+        } catch (e) {
+            console.error("Error adding user: ", e);
+        }
+    
+        console.log('User Signed Up:', email);
     };
-  
-    if (Platform.OS === "web") {
-      // ... (This part remains largely unchanged. I've omitted it for brevity)
-    } else {
-      return (
-        <ImageBackground
-          source={loginwaves}
-          resizeMode="contain"
-          style={styles.image}
-        >
-          <StatusBar hidden />
-          <SafeAreaView style={styles.container}>
-            <TouchableWithoutFeedback
-              onPress={Keyboard.dismiss}
-              accessible={false}
-            >
-              <View style={styles.loginView}>
-                <View
-                  style={{
-                    padding: 22,
-                    borderRadius: 20,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 70,
-                      fontWeight: 700,
-                      color: Platform.OS === "web" ? "#000" : "#f4f4ff",
-                      textAlign: "center",
-                    }}
-                  >
-                    FairShare
-                  </Text>
-                </View>
-  
-                <View
-                  style={{
-                    gap: 20,
-                    flexDirection: "column",
-                    alignItems: "center",
-                  }}
-                >
-                  <View style={{ gap: 10 }}>
-                    <View>
-                      <Text style={{ fontSize: 24, fontWeight: 700 }}>Sign Up</Text>
-                      <Text
-                        style={{
-                          fontSize: 15,
-                          color: "rgba(0,0,0,0.5)",
-                          fontWeight: 400,
-                        }}
-                      >
-                        Please sign up to continue
-                      </Text>
+    
+
+        return (
+            <SafeAreaView style={styles.container}>
+                <Image source={waves} style={styles.waveBackground} />
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <View style={styles.signUpView}>
+                        <View style={styles.header}>
+                            <Text style={styles.headerText}>Register</Text>
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <RegisterCard 
+                                setFirstName={setFirstName}
+                                setLastName={setLastName}
+                                setEmail={setEmail}
+                                setPassword={setPassword}
+                                setConfirmPassword={setConfirmPassword}
+                            />
+                            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+                                <Text style={styles.buttonText}>Sign Up</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-  
-                    <LoginCard
-                      setEmail={(e) => setEmail(e)}
-                      setPassword={(e) => setPassword(e)}
-                    />
-                  </View>
-  
-                  <View
-                    style={{
-                      gap: 20,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Pressable
-                      style={{
-                        padding: 15,
-                        backgroundColor: "#23B26E",
-                        borderRadius: 10,
-                        width: 250,
-                        shadowColor: "#171717",
-                        shadowOffset: { width: -1, height: 4 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
-                      }}
-                      onPress={() => signUp()}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 600,
-                          color: "#fff",
-                          textAlign: "center",
-                        }}
-                      >
-                        Sign Up
-                      </Text>
-                    </Pressable>
-                    <Text style={{ textAlign: "center" }}>
-                      Already have an account?
-                      <Text style={{ fontWeight: "bold" }}> Login</Text>
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </SafeAreaView>
-        </ImageBackground>
-      );
-    }
-  };
-  
-  const styles = StyleSheet.create({
+                </TouchableWithoutFeedback>
+            </SafeAreaView>
+        );
+};
+
+const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: Platform.OS === "web" ? "#f4f4ff" : "transparent",
+        flex: 1,
+        backgroundColor: "#E8E8E8", 
+        alignItems: "center",
     },
-    loginView: {
-      padding: 20,
-      gap: 80,
-      flexDirection: "column",
-      justifyContent: "space-around",
+    signUpView: {
+        padding: 20,
+        flexDirection: "column",
+        justifyContent: "space-around",
     },
-    image: {
-      flex: 1,
-      justifyContent: "center",
+    header: {
+        paddingVertical: 22,
+        paddingHorizontal: 10,
+        borderRadius: 20,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 2,
     },
-  });
-  
-  export default SignUpView;
-  
+    headerText: {
+        fontSize: 50,
+        fontWeight: '700',
+        color: "#000",
+        textAlign: 'center',
+    },
+    // inputContainer: {
+    //     backgroundColor: '#f4f4ff',
+    //     borderRadius: 10,
+    //     padding: 20,
+    //     shadowColor: '#000',
+    //     shadowOffset: { width: 0, height: 2 },
+    //     shadowOpacity: 0.2,
+    //     shadowRadius: 5,
+    // },
+    formContainer: {
+        gap: 20,
+        flexDirection: 'column',
+        alignItems: 'center',
+        
+    },
+    input: {
+        width: '100%',
+        padding: 10,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#B1B1B1',  
+        borderRadius: 10,
+        backgroundColor: '#FFF', 
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    button: {
+        marginTop: 30,
+        marginHorizontal: 50,
+        backgroundColor: "#23B26E",
+        padding: 15,
+        borderRadius: 10,
+        width: 250,
+        shadowColor: "#171717",
+        shadowOffset: { width: -1, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        alignItems: 'center',
+    },
+    buttonText: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    waveBackground: {
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        resizeMode: "cover",
+    }
+});
+
+export default SignUp;
