@@ -187,19 +187,27 @@ const HomeView = ({ navigation }) => {
         );
         const billSnapshots = [];
         let totalSum = 0;
-
-        querySnapshot.forEach((doc) => {
-          billSnapshots.push(doc);
-          const billData = doc.data();
-          if (billData && billData.items && billData.items[user.uid]) {
-            const userItems = billData.items[user.uid];
-            const userItemsSum = Object.values(userItems).reduce(
-              (accum, item) => accum + item.price * item.quantity,
-              0
-            );
-            totalSum += userItemsSum;
+        const unsubscribe = onSnapshot(
+          query(
+            collection(db, "bills"),
+            where("users", "array-contains", user.uid)
+          ),
+          (querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              billSnapshots.push(doc);
+              const billData = doc.data();
+              if (billData && billData.items && billData.items[user.uid]) {
+                const userItems = billData.items[user.uid];
+                const userItemsSum = Object.values(userItems).reduce(
+                  (accum, item) => accum + item.price * item.quantity,
+                  0
+                );
+                totalSum += userItemsSum;
+              }
+            });
+            setUserBills(billSnapshots);
           }
-        });
+        );
 
         setUserBills(billSnapshots);
         setTotalYourShare(totalSum);
