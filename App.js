@@ -15,6 +15,8 @@ import NewBill from "./pages/newBill";
 import HomeScreen from "./pages/home-view";
 import LoginView from "./pages/login-view";
 import CameraScan from "./pages/camera-scan.js"
+import PickItems from "./pages/pick-items";
+import SignUpView from "./pages/sign-up";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -32,6 +34,8 @@ function App() {
         <Stack.Screen name="NewBill" component={NewBill} />
         <Stack.Screen name="Login" component={LoginView} />
         <Stack.Screen name="CameraScan" component={CameraScan} />
+        <Stack.Screen name="PickItems" component= {PickItems} />
+        <Stack.Screen name="SignUp" component={SignUpView} />
       </Stack.Navigator>
     </NavigationContainer>
   );
