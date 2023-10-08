@@ -1,20 +1,65 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  Text,
+} from "react-native";
 import { Camera } from "expo-camera";
-import { FIREBASE_STORAGE, FIREBASE_AUTH } from "../firebaseConfig";
+import { FIRESTORE, FIREBASE_STORAGE, FIREBASE_AUTH } from "../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "react-native";
-import LoadingSpinner from "../components/LoadingSpinner"; // adjust the path as necessary
+import LoadingSpinner from "../components/LoadingSpinner";
 import * as ImageManipulator from "expo-image-manipulator";
+import {
+  getFirestore,
+  onSnapshot,
+  getDoc,
+  doc,
+  setDoc,
+} from "@firebase/firestore";
 
-export default function CameraScan({ navigation }) {
+export default function CameraScan({ route, navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const cameraRef = useRef(null);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [isLoading, setIsLoading] = useState(false);
   const userId = FIREBASE_AUTH.currentUser?.uid;
+  const user = FIREBASE_AUTH.currentUser;
+  const db = getFirestore();
+  const [billData, setBillData] = useState();
+
+  useEffect(() => {
+    if (billData) {
+      navigation.navigate("PickItems", {
+        billData: billData,
+      });
+    }
+  }, [billData]);
+
+  const fetchMostRecentBill = async () => {
+    try {
+      const db = getFirestore();
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+
+      const bills = userDoc.data().bills;
+
+      if (bills && bills.length > 0) {
+        const mostRecentBill = bills[bills.length - 1];
+        return mostRecentBill;
+      } else {
+        console.log("No bills found for the user");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching the most recent bill: ", error);
+      return null;
+    }
+  };
 
   const toggleFlash = () => {
     setFlashMode(
@@ -30,19 +75,17 @@ export default function CameraScan({ navigation }) {
       setHasPermission(cameraStatus.status === "granted");
     })();
   }, []);
-  const [capturedPhoto, setCapturedPhoto] = useState(null); // state to hold the captured photo URI
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   const handleCapture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       setIsLoading(true);
-      setCapturedPhoto(photo.uri); // Display the captured photo on the screen
+      setCapturedPhoto(photo.uri);
 
       setTimeout(async () => {
-        // Compress the image
         const manipulatedPhoto = await compressImage(photo.uri);
 
-        // Convert the compressed image to a blob
         const response = await fetch(manipulatedPhoto.uri);
         const blob = await response.blob();
 
@@ -51,43 +94,58 @@ export default function CameraScan({ navigation }) {
           `users/${userId}/photos/${Date.now()}.jpg`
         );
 
-        const uploadTask = uploadBytesResumable(storageRef, blob);
+        const userRef = doc(FIRESTORE, "users", userId);
+        await setDoc(userRef, { uploaded: false }, { merge: true });
 
+        const uploadTask = uploadBytesResumable(storageRef, blob);
         uploadTask.on(
           "state_changed",
-          (snapshot) => {
-            // Handle the upload progress if needed
-          },
+          (snapshot) => {},
           (error) => {
             console.error("Error uploading image: ", error);
           },
           async () => {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             console.log("File available at", downloadURL);
-            setCapturedPhoto(null); // Hide the captured photo
-            setIsLoading(false);
-            navigation.navigate("PickItems"); // Navigate to PickItems after the upload is complete
+            setIsLoading(true);
+            const unsubscribe = onSnapshot(
+              doc(FIRESTORE, "users", userId),
+              async (snapshot) => {
+                const data = snapshot.data();
+                if (data && data.uploaded) {
+                  const billInformation = await retrieveLatestBillItems();
+                  setIsLoading(false);
+                  setBillData(billInformation);
+                  setCapturedPhoto(null);
+                  navigation.navigate("PickItems");
+                  unsubscribe();
+                }
+              }
+            );
           }
         );
-      }, 500); // Delay of half a second // Display the captured photo for 1 second
+      }, 500);
     }
   };
+
+  useEffect(() => {
+    console.log("isLoading", isLoading);
+  }, [isLoading]);
 
   const compressImage = async (uri) => {
     const compressed = await ImageManipulator.manipulateAsync(
       uri,
       [{ resize: { width: 1024 } }],
-      { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+      { compress: 0.2, format: ImageManipulator.SaveFormat.JPEG }
     );
-  
+
     const imageSizeInBytes = compressed.size;
-    const imageSizeInMB = imageSizeInBytes / (1024 * 1024); // Convert to MB
-  
-    
-  
+    const imageSizeInMB = imageSizeInBytes / (1024 * 1024);
+
+    console.log(imageSizeInMB);
+
     return compressed;
   };
-  
 
   if (hasPermission === null) {
     return <View />;
@@ -168,8 +226,8 @@ const styles = StyleSheet.create({
   },
   flashButton: {
     position: "absolute",
-    right: 20, // 20 pixels from the right edge
-    top: 20, // 20 pixels from the top edge
+    right: 20,
+    top: 20,
     padding: 10,
   },
 
@@ -199,7 +257,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.85)", // Darkened background
-    zIndex: 1000, // Ensure it's on top
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    zIndex: 1000,
   },
 });
