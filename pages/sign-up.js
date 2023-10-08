@@ -2,26 +2,18 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   Image,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
 import waves from "../assets/waves.png";
 import RegisterCard from "../components/register-card/register-card";
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  setDoc,
-} from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { FIREBASE_AUTH } from "../firebaseConfig"; // assuming you have the auth instance exported from firebaseConfig
+import { FIREBASE_AUTH } from "../firebaseConfig";
 
 const SignUp = ({ navigation }) => {
   const [firstName, setFirstName] = useState("");
@@ -41,24 +33,19 @@ const SignUp = ({ navigation }) => {
     }
 
     try {
-      // Firebase authentication for user registration
       const userCredential = await createUserWithEmailAndPassword(
         FIREBASE_AUTH,
         email,
         password
       );
-      const user = userCredential.user; // Extracting the authenticated user
+      const user = userCredential.user;
 
-      // Initialize Firestore
       const db = getFirestore();
 
-      // Store user data in Firestore
       await setDoc(doc(db, "users", user.uid), {
-        // Use setDoc instead of addDoc here
         firstName: firstName,
         lastName: lastName,
         email: email,
-        // ... [other fields]
       });
 
       console.log("User data added with UID: ", user.uid);
@@ -84,23 +71,18 @@ const SignUp = ({ navigation }) => {
             <RegisterCard
               setFirstName={(value) => {
                 setFirstName(value);
-                //console.log("First Name:", value);
               }}
               setLastName={(value) => {
                 setLastName(value);
-                //console.log("Last Name:", value);
               }}
               setEmail={(value) => {
                 setEmailWrapper(value);
-                //console.log("Email:", value);
               }}
               setPassword={(value) => {
                 setPassword(value);
-                //console.log("Password:", value);
               }}
               setConfirmPassword={(value) => {
                 setConfirmPassword(value);
-                //console.log("Confirm Password:", value);
               }}
             />
 

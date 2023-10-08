@@ -1,5 +1,4 @@
-import { StyleSheet, Text, View, TextInput, ScrollView } from "react-native";
-import { useState } from "react";
+import { StyleSheet, View, TextInput } from "react-native";
 
 const LoginCard = ({ setEmail, setPassword }) => {
   return (
@@ -8,9 +7,7 @@ const LoginCard = ({ setEmail, setPassword }) => {
         placeholder={"Email"}
         placeholderTextColor={"#8c8c8c"}
         enablesReturnKeyAutomatically={true}
-        // value={emailState}
         onChangeText={(value) => setEmail(value)}
-        inputMode={"email"}
         style={styles.input}
       />
       <TextInput
@@ -18,7 +15,6 @@ const LoginCard = ({ setEmail, setPassword }) => {
         placeholderTextColor={"#8c8c8c"}
         enablesReturnKeyAutomatically={true}
         style={styles.input}
-        // value={passwordState}
         onChangeText={(value) => setPassword(value)}
         autoComplete={"current-password"}
         secureTextEntry={true}
@@ -41,10 +37,8 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     margin: 12,
-    // borderWidth: 1,
     padding: 10,
-
-    backgroundColor: "#e6e6fa",
+    backgroundColor: "#f4f4ff",
     borderRadius: 5,
   },
 });

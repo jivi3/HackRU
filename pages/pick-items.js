@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   View,
@@ -14,74 +14,26 @@ import Modal from "react-native-modal";
 
 import { currencyFormatter } from "../utils";
 
-import { FIRESTORE, FIREBASE_AUTH } from "../firebaseConfig";
+import { FIREBASE_AUTH } from "../firebaseConfig";
 
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  getFirestore,
-  onSnapshot,
-} from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 const PickItems = ({ route, navigation }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
-  const [editedName, setEditedName] = useState("");
+  const [editedName, setEditedName] = useState({});
   const [editedPrice, setEditedPrice] = useState("");
   const [editedQty, setEditedQty] = useState("");
   const [items, setItems] = useState(itemsData.items);
-  const [billData, setBillData] = useState({});
-  const [billItems, setBillItems] = useState([]);
-  const [billUsers, setBillUsers] = useState([]);
-  const [billSummary, setBillSummary] = useState([]);
-  const summary = itemsData.summary;
   const user = FIREBASE_AUTH.currentUser;
-  const { billId } = route.params;
-
+  const { billData } = route.params;
   const db = getFirestore();
 
   const deleteItemById = (id) => {
     const filteredItems = items.filter((item) => item.id !== id);
     setItems(filteredItems);
   };
-
-  useEffect(() => {
-    console.log(billId);
-    if (billId) {
-      const fetchBillData = async () => {
-        try {
-          // const userDoc = await getDoc(doc(db, "bills", billId));
-          const unsub = onSnapshot(doc(db, "bills", billId), (doc) => {
-            const bItems = [];
-            const bUsers = [];
-            // const bSummary = [];
-            doc.data().items.unclaimed.forEach((doc) => {
-              bItems.push(doc);
-            });
-            doc.data().users.forEach((doc) => {
-              bUsers.push(doc);
-            });
-
-            setBillSummary(doc.data().summary);
-            setBillUsers(bUsers);
-            setBillItems(bItems);
-          });
-        } catch (error) {
-          console.error("Error fetching user name: ", error);
-        }
-      };
-      fetchBillData();
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log(billItems);
-  }, [billItems]);
 
   const renderRightActions = (id) => {
     return (
@@ -93,14 +45,6 @@ const PickItems = ({ route, navigation }) => {
       </TouchableOpacity>
     );
   };
-
-  // const toggleItemSelection = (itemId) => {
-  //   setSelectedItems((prevItems) =>
-  //     prevItems.includes(itemId)
-  //       ? prevItems.filter((id) => id !== itemId)
-  //       : [...prevItems, itemId]
-  //   );
-  // };
 
   const openEditModal = (item = null) => {
     if (item) {
@@ -132,7 +76,7 @@ const PickItems = ({ route, navigation }) => {
       setItems(updatedItems);
     } else {
       const newItem = {
-        id: (items.length + 1).toString(), // Assuming ids are sequential for simplicity
+        id: (items.length + 1).toString(),
         name: editedName,
         price: editedPrice,
         quantity: parseFloat(editedQty),
@@ -146,7 +90,7 @@ const PickItems = ({ route, navigation }) => {
     <View style={styles.container}>
       <SafeAreaView>
         <Text style={styles.header}>Bill Items</Text>
-        {billUsers[0] === user.uid && (
+        {billData.users[0] === user.uid && (
           <Text style={styles.subHeader}>Select to edit</Text>
         )}
         <ScrollView
@@ -155,39 +99,40 @@ const PickItems = ({ route, navigation }) => {
           style={{ height: 580, padding: 12 }}
         >
           <View style={styles.itemsContainer}>
-            {billItems.map((item) => {
-              if (billUsers[0] === user.uid) {
-                return (
-                  <TouchableOpacity
-                    style={styles.item}
-                    onPress={() => openEditModal(item)}
-                  >
-                    <Text style={styles.itemTitle}>{item.name}</Text>
-                    <View style={styles.quantityBox}>
-                      <Text style={styles.quantityText}>
-                        {Math.floor(item.quantity)}
+            {billData.items &&
+              billData.items.map((item) => {
+                if (billData.users[0] === user.uid) {
+                  return (
+                    <TouchableOpacity
+                      style={styles.item}
+                      onPress={() => openEditModal(item)}
+                    >
+                      <Text style={styles.itemTitle}>{item.name}</Text>
+                      <View style={styles.quantityBox}>
+                        <Text style={styles.quantityText}>
+                          {Math.floor(item.quantity)}
+                        </Text>
+                      </View>
+                      <Text style={styles.itemPrice}>
+                        ${currencyFormatter(item.price)}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                } else
+                  return (
+                    <View style={styles.item}>
+                      <Text style={styles.itemTitle}>{item.name}</Text>
+                      <View style={styles.quantityBox}>
+                        <Text style={styles.quantityText}>
+                          {Math.floor(item.quantity)}
+                        </Text>
+                      </View>
+                      <Text style={styles.itemPrice}>
+                        ${currencyFormatter(item.price)}
                       </Text>
                     </View>
-                    <Text style={styles.itemPrice}>
-                      ${currencyFormatter(item.price)}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              } else
-                return (
-                  <View style={styles.item}>
-                    <Text style={styles.itemTitle}>{item.name}</Text>
-                    <View style={styles.quantityBox}>
-                      <Text style={styles.quantityText}>
-                        {Math.floor(item.quantity)}
-                      </Text>
-                    </View>
-                    <Text style={styles.itemPrice}>
-                      ${currencyFormatter(item.price)}
-                    </Text>
-                  </View>
-                );
-            })}
+                  );
+              })}
           </View>
         </ScrollView>
         <LinearGradient
@@ -195,7 +140,7 @@ const PickItems = ({ route, navigation }) => {
           colors={["rgba(244, 244, 255, 0.1)", "rgba(244, 244, 255, 0.8)"]}
           pointerEvents={"none"}
         />
-        {billUsers[0] === user.uid && (
+        {billData.users[0] === user.uid && (
           <View
             style={{
               position: "absolute",
@@ -217,23 +162,23 @@ const PickItems = ({ route, navigation }) => {
         <View style={styles.summary}>
           <Text style={styles.summaryText}>Tax</Text>
           <Text style={styles.summaryValue}>
-            ${currencyFormatter(billSummary.tax)}
+            ${currencyFormatter(billData.summary.tax)}
           </Text>
 
           <Text style={styles.summaryText}>Gratuity</Text>
           <Text style={styles.summaryValue}>
-            ${currencyFormatter(billSummary.gratuity)}
+            ${currencyFormatter(billData.summary.gratuity)}
           </Text>
 
           <Text style={styles.summaryText}>Total</Text>
           <Text style={styles.summaryValue}>
-            ${currencyFormatter(billSummary.total)}
+            ${currencyFormatter(billData.summary.total)}
           </Text>
         </View>
 
         <TouchableOpacity
           style={styles.continueButton}
-          onPress={() => navigation.navigate("NewBill")}
+          onPress={() => navigation.navigate("HomeScreen")}
         >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
@@ -437,7 +382,7 @@ const styles = StyleSheet.create({
   quantityText: {
     color: "black",
     fontWeight: "bold",
-    fontSize: 14, // Adjust as needed
+    fontSize: 14,
   },
 });
 
