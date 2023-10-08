@@ -8,42 +8,34 @@ import {
   ScrollView,
   TextInput,
   SafeAreaView,
+  Button,
 } from "react-native";
-import itemsData from "../items.json";
 import Modal from "react-native-modal";
 
 import { currencyFormatter } from "../utils";
-
 import { FIREBASE_AUTH } from "../firebaseConfig";
-
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 const PickItems = ({ route, navigation }) => {
-  const [selectedItems, setSelectedItems] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
-  const [editedName, setEditedName] = useState({});
+  const [editedName, setEditedName] = useState("");
   const [editedPrice, setEditedPrice] = useState("");
   const [editedQty, setEditedQty] = useState("");
-  const [items, setItems] = useState(itemsData.items);
+  const [selectedSummaryField, setSelectedSummaryField] = useState(null);
+  const [editedSummaryValue, setEditedSummaryValue] = useState("");
+
   const user = FIREBASE_AUTH.currentUser;
   const { billData } = route.params;
   const db = getFirestore();
 
-  const deleteItemById = (id) => {
-    const filteredItems = items.filter((item) => item.id !== id);
-    setItems(filteredItems);
+  const truncateText = (text, length = 15) => {
+    return text.length > length ? text.substr(0, length) + "..." : text;
   };
 
-  const renderRightActions = (id) => {
-    return (
-      <TouchableOpacity
-        onPress={() => deleteItemById(id)}
-        style={styles.deleteBox}
-      >
-        <Text style={styles.deleteText}>Delete</Text>
-      </TouchableOpacity>
-    );
+  const deleteItemById = (id) => {
+    const filteredItems = billData.items.filter((item) => item.id !== id);
+    setItems(filteredItems); // Please note: You might want to update this in the Firestore too.
   };
 
   const openEditModal = (item = null) => {
@@ -61,29 +53,64 @@ const PickItems = ({ route, navigation }) => {
     setModalVisible(true);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
+    console.log("Bill id:", billData.id);
+
     if (currentItem) {
-      const updatedItems = items.map((dataItem) =>
-        dataItem.id === currentItem.id
-          ? {
-              ...dataItem,
-              name: editedName,
-              price: editedPrice,
-              quantity: editedQty,
-            }
-          : dataItem
+      const itemIndex = billData.items.findIndex(
+        (item) => item.id === currentItem.id
       );
-      setItems(updatedItems);
+
+      if (itemIndex !== -1) {
+        const updatedItem = {
+          ...billData.items[itemIndex],
+          name: editedName,
+          price: editedPrice,
+          quantity: editedQty,
+        };
+
+        billData.items[itemIndex] = updatedItem;
+
+        // Reference to the specific bill in Firestore
+        const billDocRef = doc(db, "bills", billData.id);
+
+        // Update the Firestore Document
+        try {
+          await setDoc(
+            billDocRef,
+            { items: { unclaimed: billData.items } },
+            { merge: true }
+          );
+          console.log("Firestore document updated successfully!");
+        } catch (error) {
+          console.error("Error updating Firestore document:", error);
+        }
+        setModalVisible(false);
+      }
     } else {
       const newItem = {
-        id: (items.length + 1).toString(),
         name: editedName,
         price: editedPrice,
         quantity: parseFloat(editedQty),
       };
-      setItems([...items, newItem]);
+      billData.items.push(newItem);
+
+      // Reference to the specific bill in Firestore
+      const billDocRef = doc(db, "bills", billData.id);
+
+      // Update the Firestore Document with the new item
+      try {
+        await setDoc(
+          billDocRef,
+          { items: { unclaimed: billData.items } },
+          { merge: true }
+        );
+        console.log("New item added successfully to Firestore!");
+      } catch (error) {
+        console.error("Error adding new item to Firestore:", error);
+      }
+      setModalVisible(false);
     }
-    setModalVisible(false);
   };
 
   return (
@@ -107,7 +134,9 @@ const PickItems = ({ route, navigation }) => {
                       style={styles.item}
                       onPress={() => openEditModal(item)}
                     >
-                      <Text style={styles.itemTitle}>{item.name}</Text>
+                      <Text style={styles.itemTitle}>
+                        {truncateText(item.name)}
+                      </Text>
                       <View style={styles.quantityBox}>
                         <Text style={styles.quantityText}>
                           {Math.floor(item.quantity)}
@@ -211,7 +240,11 @@ const PickItems = ({ route, navigation }) => {
               keyboardType="numeric"
             />
             <TouchableOpacity
-              onPress={handleEditSave}
+              activeOpacity={0.1}
+              onPress={() => {
+                console.log("Save button pressed");
+                handleEditSave();
+              }}
               style={styles.saveButton}
             >
               <Text style={styles.saveButtonText}>Save</Text>
@@ -335,10 +368,11 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: "#f4f4ff",
     padding: 20,
+    bottom: 140,
     borderRadius: 10,
   },
   input: {
-    color: "#black",
+    color: "black",
     backgroundColor: "white",
     padding: 16,
     borderRadius: 5,

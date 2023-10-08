@@ -28,23 +28,9 @@ export default function CameraScan({ route, navigation }) {
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [isLoading, setIsLoading] = useState(false);
   const userId = FIREBASE_AUTH.currentUser?.uid;
-  const firestore = getFirestore();
   const user = FIREBASE_AUTH.currentUser;
   const db = getFirestore();
   const [billData, setBillData] = useState();
-  const [billSummary, setBillSummary] = useState();
-  const [navItems, setNavItems] = useState(false);
-  const [billID, setBillID] = useState();
-
-  function watchUploadStatus(uid, callback) {
-    const userRef = doc(firestore, "users", uid);
-    return onSnapshot(userRef, (snapshot) => {
-      const data = snapshot.data();
-      if (data && data.uploaded) {
-        callback();
-      }
-    });
-  }
 
   useEffect(() => {
     if (billData) {
@@ -171,7 +157,7 @@ export default function CameraScan({ route, navigation }) {
       const summary = await fetchSummary(billId);
       const users = await fetchUsers(billId);
       console.log("items", items);
-      return { items: items, summary: summary, users: users };
+      return { id: billId, items: items, summary: summary, users: users };
     } catch (error) {
       console.error("Error retrieving the latest bill items:", error);
     }
@@ -216,7 +202,6 @@ export default function CameraScan({ route, navigation }) {
                   const billInformation = await retrieveLatestBillItems();
                   setIsLoading(false);
                   setBillData(billInformation);
-                  setNavItems(true);
                   setCapturedPhoto(null);
                   unsubscribe();
                 }
