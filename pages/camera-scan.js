@@ -5,8 +5,8 @@ import { FIREBASE_STORAGE, FIREBASE_AUTH } from "../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Image } from "react-native";
-import LoadingSpinner from "../components/LoadSpinner";
-
+import LoadingSpinner from "../components/LoadingSpinner"; // adjust the path as necessary
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default function CameraScan({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -39,10 +39,17 @@ export default function CameraScan({ navigation }) {
       setCapturedPhoto(photo.uri); // Display the captured photo on the screen
 
       setTimeout(async () => {
-        // Upload to Firebase Cloud Storage
-        const response = await fetch(photo.uri);
+        // Compress the image
+        const manipulatedPhoto = await compressImage(photo.uri);
+
+        // Convert the compressed image to a blob
+        const response = await fetch(manipulatedPhoto.uri);
         const blob = await response.blob();
-        const storageRef = ref(FIREBASE_STORAGE, `users/${userId}/photos/${Date.now()}.jpg`);
+
+        const storageRef = ref(
+          FIREBASE_STORAGE,
+          `users/${userId}/photos/${Date.now()}.jpg`
+        );
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
 
@@ -62,9 +69,25 @@ export default function CameraScan({ navigation }) {
             navigation.navigate("PickItems"); // Navigate to PickItems after the upload is complete
           }
         );
-      }, 500); // Display the captured photo for 1 second
+      }, 500); // Delay of half a second // Display the captured photo for 1 second
     }
   };
+
+  const compressImage = async (uri) => {
+    const compressed = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 1024 } }],
+      { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+    );
+  
+    const imageSizeInBytes = compressed.size;
+    const imageSizeInMB = imageSizeInBytes / (1024 * 1024); // Convert to MB
+  
+    
+  
+    return compressed;
+  };
+  
 
   if (hasPermission === null) {
     return <View />;

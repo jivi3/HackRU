@@ -1,23 +1,11 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  Button,
-  ScrollView,
-  StatusBar,
-  Image,
-} from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import BillCard from "./components/bill-card/bill-card";
-import waves from "./assets/waves.png";
 import NewBill from "./pages/newBill";
 import HomeScreen from "./pages/home-view";
 import LoginView from "./pages/login-view";
 import CameraScan from "./pages/camera-scan.js";
 import PickItems from "./pages/pick-items";
 import SignUp from "./pages/sign-up";
+import Payment from "./pages/payment-view";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -41,6 +29,7 @@ function App() {
           <Stack.Screen name="CameraScan" component={CameraScan} />
           <Stack.Screen name="PickItems" component={PickItems} />
           <Stack.Screen name="SignUp" component={SignUp} />
+          <Stack.Screen name="Payment" component={Payment} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
