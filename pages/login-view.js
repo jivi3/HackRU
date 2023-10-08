@@ -41,7 +41,7 @@ const LoginView = ({ navigation }) => {
       const response = await auth().createUserWithEmailAndPassword(
         email,
         password
-      );r
+      );
       console.log("User registered:", response);
       // Send verification email, or navigate to a welcome screen, or other actions on successful sign-up.
     } catch (error) {
