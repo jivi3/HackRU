@@ -40,6 +40,7 @@ const HomeView = ({ navigation }) => {
   }, [editNavigate]);
 
   const user = FIREBASE_AUTH.currentUser;
+  const userId = user.uid;
   const db = getFirestore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -177,46 +178,44 @@ const HomeView = ({ navigation }) => {
   }, [isFocused]);
 
   useEffect(() => {
-    const fetchUserBills = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          query(
-            collection(db, "bills"),
-            where("users", "array-contains", user.uid)
-          )
-        );
-        const billSnapshots = [];
-        let totalSum = 0;
-        const unsubscribe = onSnapshot(
-          query(
-            collection(db, "bills"),
-            where("users", "array-contains", user.uid)
-          ),
-          (querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-              billSnapshots.push(doc);
-              const billData = doc.data();
-              if (billData && billData.items && billData.items[user.uid]) {
-                const userItems = billData.items[user.uid];
-                const userItemsSum = Object.values(userItems).reduce(
-                  (accum, item) => accum + item.price * item.quantity,
-                  0
-                );
-                totalSum += userItemsSum;
-              }
-            });
-            setUserBills(billSnapshots);
-          }
-        );
+    let totalSum = 0;
 
-        setUserBills(billSnapshots);
+    // Set up the realtime listener
+    const unsubscribe = onSnapshot(
+      query(
+        collection(db, "bills"),
+        where("users", "array-contains", user.uid)
+      ),
+      (querySnapshot) => {
+        const billSnapshots = [];
+        totalSum = 0; // Reset to 0 for each new snapshot
+
+        querySnapshot.forEach((doc) => {
+          billSnapshots.push(doc);
+          const billData = doc.data();
+          if (billData && billData.items && billData.items[user.uid]) {
+            const userItems = billData.items[user.uid];
+            const userItemsSum = Object.values(userItems).reduce(
+              (accum, item) => accum + item.price * item.quantity,
+              0
+            );
+            totalSum += userItemsSum;
+            console.log("uis", userItemsSum);
+          }
+        });
         setTotalYourShare(totalSum);
-      } catch (error) {
+        setUserBills(billSnapshots);
+      },
+      (error) => {
         console.error("Error fetching user bills: ", error);
       }
+    );
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      unsubscribe();
     };
-    fetchUserBills();
-  }, []);
+  }, [db, user.uid]);
 
   const getGreeting = () => {
     if (userName && userName.length <= 7) {
@@ -303,8 +302,9 @@ const HomeView = ({ navigation }) => {
               <View style={styles.billsContainer}>
                 {userBills &&
                   userBills.map((bill, index) => {
-                    console.log("billUsers", bill.data()["users"]);
                     const currentUserItems = bill.data().items[user.uid];
+                    // console.log(c);
+                    console.log("cui", currentUserItems);
                     let userItemsSum = 0;
                     if (currentUserItems) {
                       userItemsSum = Object.values(currentUserItems).reduce(

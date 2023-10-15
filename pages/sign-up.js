@@ -50,7 +50,7 @@ const SignUp = ({ navigation }) => {
 
       console.log("User data added with UID: ", user.uid);
       alert("Success!");
-      navigation.navigate("NewBill");
+      navigation.navigate("HomeScreen");
     } catch (e) {
       console.error("Error registering user: ", e);
       if (e.code && e.message) {
