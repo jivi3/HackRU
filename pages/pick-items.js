@@ -136,10 +136,36 @@ const PickItems = ({ route, navigation }) => {
     setItems(sItems);
   }, []);
 
+  // const handleLeftActionStatusChange = (statusData) => {
+  //   const { key, isActivated } = statusData;
+
+  //   if (isActivated) {
+  //     const item = items[key];
+  //     const newItem = {
+  //       id: key,
+  //       name: item.name,
+  //       quantity: item.quantity,
+  //       price: item.price,
+  //     };
+
+  //     setSelectedItems((prevSelectedItems) => {
+  //       if (prevSelectedItems.some((existingItem) => existingItem.id === key)) {
+  //         return prevSelectedItems;
+  //       } else {
+  //         return [...prevSelectedItems, newItem];
+  //       }
+  //     });
+  //   }
+  // };
+
   const handleLeftActionStatusChange = (statusData) => {
     const { key, isActivated } = statusData;
 
     if (isActivated) {
+      const updatedItems = { ...items };
+      updatedItems[key].selected = true;
+      setItems(updatedItems);
+
       const item = items[key];
       const newItem = {
         id: key,
@@ -158,10 +184,30 @@ const PickItems = ({ route, navigation }) => {
     }
   };
 
+  // const handleRightActionStatusChange = (statusData) => {
+  //   const { key, isActivated } = statusData;
+
+  //   if (isActivated) {
+  //     const item = items[key];
+  //     const newItem = {
+  //       id: key,
+  //       name: item.name,
+  //       quantity: item.quantity,
+  //       price: item.price,
+  //     };
+  //     console.log("newItem", newItem);
+  //     setSelectedItems((prevItems) => prevItems.filter((i) => i.id !== key));
+  //   }
+  // };
+
   const handleRightActionStatusChange = (statusData) => {
     const { key, isActivated } = statusData;
 
     if (isActivated) {
+      const updatedItems = { ...items };
+      updatedItems[key].selected = false;
+      setItems(updatedItems);
+
       const item = items[key];
       const newItem = {
         id: key,
@@ -169,7 +215,6 @@ const PickItems = ({ route, navigation }) => {
         quantity: item.quantity,
         price: item.price,
       };
-      console.log("newItem", newItem);
       setSelectedItems((prevItems) => prevItems.filter((i) => i.id !== key));
     }
   };
@@ -296,6 +341,8 @@ const PickItems = ({ route, navigation }) => {
           stopRightSwipe={-80}
           stopLeftSwipe={80}
           style={{ height: 560, padding: 20 }}
+          contentInset={{ top: 0, left: 0, bottom: 110, right: 0 }}
+          showsVerticalScrollIndicator={false}
         />
 
         <LinearGradient

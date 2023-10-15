@@ -40,22 +40,7 @@ const Payment = ({ route, navigation }) => {
 
   const handleVenmoPayment = () => {
     updateBillWithSelectedItems();
-    const venmoScheme = "venmo://";
-    const venmoAppStoreURL = "https://apps.apple.com/us/app/venmo/id351727428";
-    const venmoPlayStoreURL =
-      "https://play.google.com/store/apps/details?id=com.venmo";
-
-    Linking.canOpenURL(venmoScheme)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(venmoScheme);
-        } else {
-          const storeURL =
-            Platform.OS === "ios" ? venmoAppStoreURL : venmoPlayStoreURL;
-          Linking.openURL(storeURL);
-        }
-      })
-      .catch((err) => console.error("An error occurred", err));
+    navigation.navigate("HomeScreen");
   };
 
   const totalCost = (items) => {
@@ -68,20 +53,16 @@ const Payment = ({ route, navigation }) => {
 
   const updateBillWithSelectedItems = async () => {
     const userId = FIREBASE_AUTH.currentUser?.uid;
-
     if (!userId) {
       console.error("No user is currently logged in!");
       return;
     }
-
     const billDocumentId = billData.id;
-
     const billRef = doc(db, "bills", billDocumentId);
-
     const docSnapshot = await getDoc(billRef);
+    console.log("docSnapshot", docSnapshot);
     if (docSnapshot.exists()) {
       const currentData = docSnapshot.data();
-
       const newData = {
         ...currentData,
         items: {
@@ -199,7 +180,7 @@ const Payment = ({ route, navigation }) => {
               </Text>
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleVenmoPayment}
+                onPress={() => handleVenmoPayment()}
               >
                 <Text style={styles.buttonText}>Pay with Venmo</Text>
               </TouchableOpacity>
