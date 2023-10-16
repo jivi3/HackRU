@@ -1,0 +1,5 @@
+google-cloud-storage==1.42.0
+azure-core
+azure-ai-formrecognizer
+firebase-admin
+openai
