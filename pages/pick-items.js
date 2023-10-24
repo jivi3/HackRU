@@ -35,9 +35,6 @@ const PickItems = ({ route, navigation }) => {
 
   const db = getFirestore();
 
-  console.log("billData", billData);
-  console.log("items", items);
-
   const truncateText = (text, length = 15) => {
     if (text) {
       return text.length > length ? text.substr(0, length) + "..." : text;
@@ -281,7 +278,7 @@ const PickItems = ({ route, navigation }) => {
               </TouchableHighlight>
             ) : (
               <View
-                key={index}
+                // key={index}
                 style={{
                   marginHorizontal: 10,
                   borderRadius: 10,

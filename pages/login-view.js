@@ -11,7 +11,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginCard from "../components/login-card/login-card";
 import loginwaves from "../assets/loginwaves.png";
 
@@ -23,6 +23,7 @@ const LoginView = ({ navigation }) => {
   const [password, setPassword] = useState();
 
   const auth = FIREBASE_AUTH;
+  const user = auth?.currentUser;
   const signIn = async () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
@@ -35,6 +36,12 @@ const LoginView = ({ navigation }) => {
   const onPressFunction = () => {
     signIn();
   };
+
+  useEffect(() => {
+    if (user) {
+      navigation.navigate("HomeScreen");
+    }
+  }, [user]);
 
   if (Platform.OS === "web") {
     return (

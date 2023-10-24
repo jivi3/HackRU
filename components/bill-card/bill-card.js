@@ -28,10 +28,6 @@ const BillCard = ({
   const user = FIREBASE_AUTH.currentUser;
   const db = getFirestore();
 
-  useEffect(() => {
-    console.log("userNames", userNames);
-  }, [userNames]);
-
   async function fetchUserNames(userIds) {
     if (!userIds || userIds.length === 0) {
       throw new Error("No user IDs provided");
