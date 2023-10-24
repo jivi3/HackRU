@@ -30,14 +30,6 @@ const Payment = ({ route, navigation }) => {
   const db = getFirestore();
   const { selectedItems, billData } = route.params;
 
-  console.log("sItemsPayment", selectedItems);
-
-  console.log("bDataPayment", billData);
-
-  const handleCashPayment = () => {
-    alert("Cash payment recorded!");
-  };
-
   const handleVenmoPayment = () => {
     updateBillWithSelectedItems();
     navigation.navigate("HomeScreen");
@@ -78,6 +70,7 @@ const Payment = ({ route, navigation }) => {
       console.error("Document does not exist.");
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <Image source={waves} style={styles.waveBackground} />

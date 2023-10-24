@@ -164,7 +164,6 @@ export default function CameraScan({ route, navigation }) {
       const items = await fetchBillItems(billId);
       const summary = await fetchSummary(billId);
       const users = await fetchUsers(billId);
-      console.log("items", items);
       return { id: billId, items: items, summary: summary, users: users };
     } catch (error) {
       console.error("Error retrieving the latest bill items:", error);
