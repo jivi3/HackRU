@@ -35,10 +35,6 @@ const HomeView = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [totalYourShare, setTotalYourShare] = useState(0);
 
-  useEffect(() => {
-    console.log("editNavigate", editNavigate);
-  }, [editNavigate]);
-
   const user = FIREBASE_AUTH.currentUser;
   const userId = user.uid;
   const db = getFirestore();
@@ -151,11 +147,7 @@ const HomeView = ({ navigation }) => {
       const items = await fetchBillItems(billId);
       const summary = await fetchSummary(billId);
       const users = await fetchUsers(billId);
-      console.log("users", users);
-      console.log("summary", summary);
-      console.log("items", items);
       return { id: billId, items: items, summary: summary, users: users };
-      console;
     } catch (error) {
       console.error("Error retrieving the latest bill items:", error);
     }
@@ -177,10 +169,77 @@ const HomeView = ({ navigation }) => {
     setEditNavigate(null);
   }, [isFocused]);
 
+  // useEffect(() => {
+  //   // Define the user's document reference
+  //   const userDocRef = doc(db, "users", user.uid);
+
+  //   // Set up the real-time listener on the user document
+  //   const unsubscribe = onSnapshot(
+  //     userDocRef,
+  //     (userDoc) => {
+  //       if (userDoc.exists()) {
+  //         const userData = userDoc.data();
+
+  //         // Check if the user has a 'bills' field and it's an array
+  //         if (userData && userData.bills && Array.isArray(userData.bills)) {
+  //           const billIds = userData.bills; // This is your array of bill IDs
+
+  //           // Now, we fetch each bill using its ID and store it in the state
+  //           const fetchBills = async () => {
+  //             let totalSum = 0;
+  //             const fetchedBills = [];
+
+  //             for (const billId of billIds) {
+  //               try {
+  //                 // Get the bill document from Firestore
+  //                 const billDoc = await getDoc(doc(db, "bills", billId));
+
+  //                 if (billDoc.exists()) {
+  //                   const billData = billDoc.data();
+  //                   fetchedBills.push(billData); // Storing the fetched bill data
+
+  //                   // If necessary, calculate the user's share from the bill
+  //                   if (billData.items && billData.items[user.uid]) {
+  //                     const userItems = billData.items[user.uid];
+  //                     const userItemsSum = Object.values(userItems).reduce(
+  //                       (accum, item) => accum + item.price * item.quantity,
+  //                       0
+  //                     );
+  //                     totalSum += userItemsSum;
+  //                   }
+  //                 }
+  //               } catch (err) {
+  //                 console.error("Error fetching bill: ", err);
+  //               }
+  //             }
+
+  //             // After all bills have been fetched, update the component's state
+  //             setUserBills(fetchedBills);
+  //             setTotalYourShare(totalSum);
+  //           };
+
+  //           fetchBills(); // Call the async function to fetch bill data
+  //         }
+  //       } else {
+  //         console.log("User document doesn't exist!");
+  //       }
+  //     },
+  //     (error) => {
+  //       console.error("Error fetching user data: ", error);
+  //     }
+  //   );
+
+  //   // Cleanup the listener when the component unmounts
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [db, user.uid]);
+
+  // console.log("userBills", userBills);
+
   useEffect(() => {
     let totalSum = 0;
 
-    // Set up the realtime listener
     const unsubscribe = onSnapshot(
       query(
         collection(db, "bills"),
@@ -200,7 +259,6 @@ const HomeView = ({ navigation }) => {
               0
             );
             totalSum += userItemsSum;
-            console.log("uis", userItemsSum);
           }
         });
         setTotalYourShare(totalSum);
@@ -303,8 +361,6 @@ const HomeView = ({ navigation }) => {
                 {userBills &&
                   userBills.map((bill, index) => {
                     const currentUserItems = bill.data().items[user.uid];
-                    // console.log(c);
-                    console.log("cui", currentUserItems);
                     let userItemsSum = 0;
                     if (currentUserItems) {
                       userItemsSum = Object.values(currentUserItems).reduce(
